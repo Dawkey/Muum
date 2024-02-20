@@ -1,0 +1,165 @@
+.player{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    z-index: 1;
+
+    .player_disc{
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        .needle{
+            position: absolute;
+            top: -5.2rem;
+            left: 6.3rem;
+            width: 5rem;
+            height: 8rem;
+            background-image: url("../assets/images/img_needle.png");
+            background-size: contain;
+        }
+        .disc{
+            width: 15rem;
+            height: 15rem;
+            background-image: url("../assets/images/img_disc.png");
+            background-size: cover;
+        }
+    }
+
+    .player_operator{
+        z-index: 2;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3rem;        
+        display: flex;
+        align-items: center;
+        border-top: 1px solid #ddd;
+        padding: 0 2rem;
+        box-sizing: border-box;
+        i{
+            color: #333;
+            cursor: pointer;
+        }
+        .operator_left{
+            display: flex;
+            align-items: center;
+            .icon-prev,.icon-next{
+                font-size: 1.6rem;
+            }
+            .icon-play,.icon-pause{
+                font-size: 1.7rem;
+            }
+            >i{
+                margin: 0 0.3rem;
+            }
+        }
+        .operator_bar{
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            margin: 0.6rem;
+            .bar{
+                position: relative;
+                height: 0.4rem;
+                flex-grow: 1;
+                background-color: #ccc;
+                display: flex;
+                align-items: center;
+                border-radius: 0.2rem;
+                cursor: pointer;
+                .progress_bar{                    
+                    position: absolute;
+                    width: 0;
+                    height: 100%;                    
+                    background-color: #555;
+                    border-radius: 0.2rem;
+                }
+                .dot{
+                    position: absolute;
+                    left: 0;
+                    height: 0.6rem;
+                    width: 0.6rem;
+                    background-color: #555;
+                    transform: translateX(-50%);
+                    border-radius: 50%;
+                }
+            }
+            .time{
+                font-family: 'Roboto Mono';
+                font-size: 0.8rem;
+                line-height: 100%;
+                margin: 0 0.5rem;
+                color: #999;
+            }
+        }
+        .operator_right{
+            display: flex;
+            align-items: center;            
+            .icon-playMode{
+                font-size: 1.35rem;
+            }
+
+            .icon-list{
+                font-size: 1.7rem;
+            }
+            >i{
+                margin: 0 0.3rem;
+            }
+            .operator_volume{
+                position: relative;
+                display: flex;
+                justify-content: center;
+                .icon-volume,.icon-volumeMute{
+                    font-size: 1.46rem;
+                    margin-right: -0.1rem;
+                }
+                .volume_bar_container{
+                    position: absolute;
+                    bottom: 1rem;
+                    padding: 0.3rem;
+                    padding-bottom: 0.6rem;
+                    .volume_bar{                        
+                        width: 1.6rem;
+                        padding: 0.5rem 0;
+                        display: flex;
+                        justify-content: center;
+                        background-color: #fcfcfc;
+                        border: 1px solid #ddd;
+                        .bar{
+                            position: relative;
+                            height: 6rem;
+                            width: 0.4rem;
+                            display: flex;
+                            justify-content: center;
+                            background-color: #ccc;
+                            border-radius: 0.2rem;
+                            cursor: pointer;
+                            .progress_bar{                    
+                                position: absolute;
+                                bottom: 0;
+                                width: 100%;
+                                height: 0;
+                                background-color: #555;
+                                border-radius: 0.2rem;
+                            }
+                            .dot{
+                                position: absolute;
+                                bottom: 0;
+                                height: 0.6rem;
+                                width: 0.6rem;
+                                background-color: #555;
+                                transform: translateY(50%);
+                                border-radius: 50%;                            
+                            }
+                        }
+                    }                    
+                }
+
+            }
+        }        
+    }
+}

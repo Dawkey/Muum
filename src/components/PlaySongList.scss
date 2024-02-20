@@ -1,0 +1,58 @@
+.player_playSongList{
+    z-index: 3;
+    position: absolute;
+    right: 0;
+    height: calc(100% - 3rem);
+    background-color: #fcfcfc;
+    font-size: 0.9rem;
+    .song{
+        display: flex;
+        padding: 0.5rem;
+        align-items: center;
+        position: relative;
+        &:nth-child(2n){
+            background-color: #f6f6f6;
+        }
+        &:hover{
+            background-color: #f0f0f0;
+        }
+        &.active{
+            background-color: rgb(230,230,230);
+            &:hover{
+                background-color: rgb(225,225,225);
+            }
+            .mark{
+                display: block;
+            }
+        }         
+        >div{
+            text-wrap: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mark{
+            position: absolute;
+            display: none;
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: #666;
+            border-radius: 0.1rem;
+        }
+        .name{
+            width: 8rem;
+            color: #333;
+            margin-left: 1rem;
+        }
+        .artist{
+            width: 5rem;
+            color: #999;
+            margin: 0 1rem;
+            font-size: 0.85rem;
+        }
+        .duration{
+            width: 3rem;
+            color: #ccc;
+            font-size: 0.8rem;
+        }
+    }
+}

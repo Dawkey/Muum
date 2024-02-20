@@ -1,0 +1,119 @@
+.local_file{
+    position: absolute;
+    z-index: 2;
+    width: 100%;    
+    height: calc(100% - 3rem);
+    box-sizing: border-box;
+    padding: 1.5rem;
+    user-select: none;
+    .file_operator{
+        display: flex;
+        justify-content: space-between;
+        .play_all_button{
+            display: flex;
+            align-items: center;
+            padding: 0 1.2rem;
+            height: 2.2rem;
+            border-radius: 0.2rem;
+            background-color: #666;
+            color: #f0f0f0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            .icon-play{
+                margin-right: 0.3rem;
+                margin-bottom: -0.2rem;
+                font-size: 1.1rem;
+            }
+        }
+        .search_input{
+            position: relative;
+            height: 2.2rem;
+            width: 14rem;
+            border-radius: 0.2rem;
+            background-color: #f0f0f0;
+            color: #333;  
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 0 0.6rem;
+            .input{
+                height: 100%;
+                width: 100%;
+                border: none;
+                background: inherit;
+                color: inherit;
+                padding: 0;
+                font-family: inherit;
+                font-size: 0.9rem;
+                &:focus{
+                    outline: 0;
+                }
+                &::placeholder{
+                    color: #bbb;
+                }
+            }            
+            .icon-search{
+                font-size: 1.1rem;
+                flex-shrink: 0;
+                margin-left: 0.3rem;
+            }
+        }
+    }
+    .file_list{
+        margin-top: 1rem;
+        background-color: #fcfcfc;
+        .file{
+            display: flex;
+            padding: 0.5rem;
+            align-items: center;
+            &:nth-child(2n){
+                background-color: #f6f6f6;
+            }
+            &:hover{
+                background-color: rgb(232, 232, 232);
+            }
+            &.title{
+                background-color: #f6f6f6;
+                >div{
+                    font-size: 0.85rem;
+                    color: #999;
+                }
+            }            
+            >div{
+                text-wrap: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-right: 1rem;
+            }
+            .index{
+                width: 2.5rem;
+                flex-shrink: 0;
+                text-align: right;
+                color: #ccc;
+                font-size: 0.9rem;
+            }
+            .name{
+                width: 40%;
+                color: #333;
+                font-size: 0.95rem;
+            }
+            .artists{
+                width: 30%;
+                color: #666;
+                font-size: 0.9rem;
+            }
+            .album{
+                width: 30%;
+                color: #999;
+                font-size: 0.9rem;
+            }
+            .duration{
+                width: 3rem;
+                flex-shrink: 0;
+                color: #bbb;
+                font-size: 0.9rem;
+            }
+        }
+    }
+}
