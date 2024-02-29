@@ -1,13 +1,16 @@
-const { app, BrowserWindow, ipcMain, Menu, MenuItem } = require('electron');
-const fs = require('fs').promises;
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const fs = require('fs');
+const fsPromise = require('fs').promises;
 const path = require('path');
-const util = require('util');
 const { parseFile } = require('music-metadata');
 const { v4: uuidv4 } = require('uuid');
+const pLimit = require('p-limit');
+const Store = require('electron-store');
 
-let mainWindow;
+Store.initRenderer();
+
 app.on('ready', () => {
-    mainWindow = new BrowserWindow({
+    let mainWindow = new BrowserWindow({
         window: 1024,
         height: 680,
         webPreferences: {
@@ -19,21 +22,16 @@ app.on('ready', () => {
     mainWindow.menuBarVisible = false;
     mainWindow.loadURL('http://localhost:3000/');
 
-    // ipcMain.on("showContextMenu", (e, menus) => {
-    //     const mainMenu = menus.map(item => {
-    //         return {
-    //             label: item.label,
-    //             click: ()=>{e.sender.send(item.event)}
-    //         }
-    //     })
-    //     const contextMenu = Menu.buildFromTemplate(mainMenu);
-    //     contextMenu.popup(mainWindow);
-    // });
+    fs.watch("D:\\Projects\\Muum\\music", debounce((eventType, filename)=>{
+        console.log(eventType);
+        console.log(filename);
+        mainWindow.webContents.send("onFileChange");
+    }, 100));    
 
     ipcMain.handle("getLocalFileData", async () => {
         const musicPath = "D:\\Projects\\Muum\\music";
         try {
-            const files = await fs.readdir(musicPath);
+            const files = await fsPromise.readdir(musicPath);
             const fileList = [];
             for (const file of files) {
                 const filePath = path.join(musicPath, file);
@@ -62,4 +60,32 @@ app.on('ready', () => {
         }
     });
 
+    ipcMain.on("showFileInExplorer", (e, filePath) => {
+        shell.showItemInFolder(filePath);
+    });
+
+    ipcMain.on("deleteFiles", async (e, filePaths) => {
+        try {
+            console.log(filePaths);
+            const limit = pLimit(100);
+            const deletePromises = filePaths.map(filePath => {
+                return limit(() => fsPromise.unlink(filePath));
+            });
+            await Promise.all(deletePromises);
+        }
+        catch (e) {
+            console.error("delete dir fail:", e);
+        }
+    });
+
 });
+
+function debounce(func, delay) {
+    let timer = null;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    }
+}

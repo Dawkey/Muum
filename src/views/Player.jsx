@@ -7,7 +7,7 @@ import { numberToTime, shuffleArray } from '../utils/tool';
 function Player(props) {
     const { playList, playSongId } = props;
 
-    const [playIndex, setPlayIndex] = useState(null);
+    const [playIndex, setPlayIndex] = useState(0);
     const [playStatus, setPlayStatus] = useState(false);
     // 0-顺序播放 1-随机播放 2-单曲循环
     const [playMode, setPlayMode] = useState(0);
@@ -82,14 +82,16 @@ function Player(props) {
     }, [playList, playSongId]);
 
 
-    // 歌曲索引变化时，更换audio路径等相关逻辑
+    // 播放列表和歌曲索引变化时，更换audio路径等相关逻辑
     useEffect(() => {
         if (playList.length === 0) return;
         const song = playList[playIndex];
+        // 暂时为playList变化，而playIndex还没来得及变化，导致song为undefined的情况打的补丁
+        if (!song) return;
         const { path } = song;
         setAudioSrc(path);
         randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playIndex);
-    }, [playIndex]);
+    }, [playList, playIndex]);
 
     // 播放模式切换到随机播放时，重新打乱索引数组
     useEffect(() => {

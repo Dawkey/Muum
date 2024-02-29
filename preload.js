@@ -1,4 +1,9 @@
 const { contextBridge, ipcRenderer, } = require('electron');
+const Store = require('electron-store');
+
+const store = new Store({
+    name: 'muum-config'
+});
 
 const electronApi = {
 
@@ -6,17 +11,29 @@ const electronApi = {
         return ipcRenderer.invoke("getLocalFileData");
     },
 
-    // showContextMenu: menus => {
-    //     ipcRenderer.send("showContextMenu", menus);
-    // },
+    showFileInExplorer: filePath => {
+        ipcRenderer.send("showFileInExplorer", filePath);
+    },
 
-    // addContextMenuEvent: events => {
-    //     events.forEach(item => {
-    //         const { event, emitter } = item;
-    //         ipcRenderer.removeAllListeners(event);
-    //         ipcRenderer.on(event, emitter);
-    //     });
-    // }
+    deleteFiles: filePaths => {
+        ipcRenderer.send("deleteFiles", filePaths);
+    },
+
+    onFileChange: fn => {
+        ipcRenderer.removeAllListeners('onFileChange');
+        ipcRenderer.on('onFileChange', () => {
+            fn();
+        });
+    },
+
+    setStore: (key, value) => {
+        return store.set(key, value);
+    },
+
+    getStore: key => {
+        return store.get(key);
+    }
+
 }
 
 contextBridge.exposeInMainWorld("electronApi", electronApi);

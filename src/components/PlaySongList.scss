@@ -5,6 +5,8 @@
     height: calc(100% - 3rem);
     background-color: #fcfcfc;
     font-size: 0.9rem;
+    user-select: none;
+    border-left: 1px solid #ddd;
     .song{
         display: flex;
         padding: 0.5rem;

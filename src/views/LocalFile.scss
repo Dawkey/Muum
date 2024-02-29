@@ -70,8 +70,11 @@
             &:nth-child(2n){
                 background-color: #f6f6f6;
             }
+            &.selected{
+                background-color: rgb(225, 225, 225);
+            }            
             &:hover{
-                background-color: rgb(232, 232, 232);
+                background-color: rgb(235, 235, 235);
             }
             &.title{
                 background-color: #f6f6f6;
