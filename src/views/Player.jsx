@@ -5,17 +5,17 @@ import PlaySongList from '../components/PlaySongList';
 import { numberToTime, shuffleArray } from '../utils/tool';
 
 function Player(props) {
-    const { playList, playSongId } = props;
+    const { playList, playIndex, playId, setPlaySongs, setCurrentSong } = props;
 
-    const [playIndex, setPlayIndex] = useState(0);
     const [playStatus, setPlayStatus] = useState(false);
     // 0-顺序播放 1-随机播放 2-单曲循环
-    const [playMode, setPlayMode] = useState(0);
+    const [playMode, setPlayMode] = useState(1);
 
     const [audioSrc, setAudioSrc] = useState("");
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioVolume, setAudioVolume] = useState(0.2);
+    const [audioCover, setAudioCover] = useState("");
 
     // audioBarDragFlag、volumeBarDragFlag用来判定是否正在拖动进度条
     // audioBarDragProgress用来控制拖动音频进度条时的进度，因为不希望拖动时立刻改变音频进度，所以需要一个额外的变量来存储
@@ -29,9 +29,7 @@ function Player(props) {
 
     // currentIndex: 当前播放歌曲在 indexs乱序索引数组中的位置（索引）
     // indexs: 随机播放使用的乱序索引数组
-    const randomPlayIndexs = useRef({ currentIndex: 0, indexs: [] });
-    
-    const prevPlayList = useRef([]);
+    const randomPlayIndexs = useRef({ currentIndex: 0, indexs: [] });    
 
     const $audio = useRef(null);
     const $audioProgressBar = useRef(null);
@@ -54,44 +52,31 @@ function Player(props) {
     useEffect(() => {
         if (playList.length === 0) return;
 
-        // 外部传入的playSongId或playList变化时，重新生成当前播放索引
-        let playSongIndex = 0;
-        for (let i = 0; i < playList.length; i++){
-            if (playList[i].id === playSongId) {                
-                playSongIndex = i;
-                break;
-            }
-        }
-        setPlayIndex(playSongIndex);
+        console.log("play list change.");
+        console.log(playList);
+        const indexs = new Array(playList.length).fill(0)
+            .map((value, index) => index);
+        randomPlayIndexs.current.indexs = shuffleArray(indexs);
+        randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playIndex);
 
-        if (!playStatus) {
-            // setPlayStatus(true);
-        }
-
-        // 播放列表(playList)变化时，重新生成随机播放列表
-        if (playList !== prevPlayList.current) {
-            console.log("play list change.");
-            console.log(playList);
-            const indexs = new Array(playList.length).fill(0)
-                .map((value, index) => index);
-            randomPlayIndexs.current.indexs = shuffleArray(indexs);
-            randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playSongIndex);
-            prevPlayList.current = playList;
-        }
-
-    }, [playList, playSongId]);
+    }, [playList]);
 
 
-    // 播放列表和歌曲索引变化时，更换audio路径等相关逻辑
+    // 播放歌曲ID变化时，更换audio路径等相关逻辑
     useEffect(() => {
         if (playList.length === 0) return;
         const song = playList[playIndex];
-        // 暂时为playList变化，而playIndex还没来得及变化，导致song为undefined的情况打的补丁
-        if (!song) return;
         const { path } = song;
         setAudioSrc(path);
         randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playIndex);
-    }, [playList, playIndex]);
+
+        window.electronApi.parseSongFile(path).then(data => {
+            const { name, path, cover } = data;
+            const coverUrl = URL.createObjectURL(new Blob([cover.data]));
+            setAudioCover(coverUrl);
+        });
+        
+    }, [playId]);
 
     // 播放模式切换到随机播放时，重新打乱索引数组
     useEffect(() => {
@@ -121,6 +106,7 @@ function Player(props) {
     function audioLoad() {
         setAudioCurrentTime(0);
         setAudioDuration($audio.current.duration);
+        console.log($audio.current);
         if (playStatus) {
             $audio.current.play();
         }
@@ -283,7 +269,7 @@ function Player(props) {
 
     // 根据索引跳转到对应歌曲
     function jumpToSong(index) {
-        setPlayIndex(index);
+        setCurrentSong(playList[index], index);
         if (playStatus === false) {
             toggleSong();
         }
@@ -301,46 +287,56 @@ function Player(props) {
                 >
                 </audio>
 
-                <div className='player_disc'>
+                {/* <div className='player_disc'>
                     <div className='needle'></div>
                     <div className='disc'></div>
-                </div>
+                </div> */}
 
                 <div className='player_operator'>
+
                     <div className='operator_left'>
-                        <i
-                            className='icon-prev'
-                            onClick={prevSong}
-                        />
-                        <i
-                            className={playStatus ? 'icon-pause' : 'icon-play'}
-                            onClick={toggleSong}
-                        />
-                        <i
-                            className='icon-next'
-                            onClick={nextSong}
-                        />
+                        <div className='cover'>
+                            <img src={audioCover} alt=''/>
+                        </div>
+                        <div></div>
                     </div>
-                    <div className='operator_bar'>
-                        <div className='time'>
-                            {numberToTime(audioCurrentTime)}
-                        </div>
-                        <div
-                            ref={$audioProgressBar}
-                            className='bar'
-                            onMouseDown={clickAudioProgress}
-                        >
+                    
+                    <div className='operator_middle'>
+                        <div className='operator_play'>
+                            <i
+                                className='icon-prev'
+                                onClick={prevSong}
+                            />
+                            <i
+                                className={playStatus ? 'icon-pause' : 'icon-play'}
+                                onClick={toggleSong}
+                            />
+                            <i
+                                className='icon-next'
+                                onClick={nextSong}
+                            />
+                        </div>                        
+                        <div className='operator_bar'>
+                            <div className='time'>
+                                {numberToTime(audioCurrentTime)}
+                            </div>
                             <div
-                                className='progress_bar'
-                                style={{ width: playProgress * 100 + "%" }}
-                            ></div>
-                            <span
-                                className='dot'
-                                style={{ left: playProgress * 100 + "%" }}
-                            ></span>
-                        </div>
-                        <div className='time'>
-                            {numberToTime(audioDuration)}
+                                ref={$audioProgressBar}
+                                className='bar'
+                                onMouseDown={clickAudioProgress}
+                            >
+                                <div
+                                    className='progress_bar'
+                                    style={{ width: playProgress * 100 + "%" }}
+                                ></div>
+                                <span
+                                    className='dot'
+                                    style={{ left: playProgress * 100 + "%" }}
+                                ></span>
+                            </div>
+                            <div className='time'>
+                                {numberToTime(audioDuration)}
+                            </div>
                         </div>
                     </div>
                     <div className='operator_right'>
@@ -393,6 +389,7 @@ function Player(props) {
                 playList={playList}
                 playIndex={playIndex}
                 jumpToSong={jumpToSong}
+                setPlaySongs={setPlaySongs}
             />
         </>
     )

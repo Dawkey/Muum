@@ -6,45 +6,41 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import './LocalFile.scss';
 import { numberToTime } from '../utils/tool';
 import { storeKeys } from '../utils/config';
+import useSelectList from '../hooks/useSelectList';
 
 
 function LocalFile(props) {
-    const { setPlaySongs, setCurrentSong } = props;
+    const { playId, setPlaySongs, setCurrentSong } = props;
     const [fileList, setFileList] = useState([]);
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    const {
+        selectedItems: selectedFiles,
+        initSelect,
+        clickItem: clickFile
+    } = useSelectList(fileList, 'localFileList');
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [menuItemIndex, setMenuItemIndex] = useState(0);
 
     const [confirmDlgShowFlag, setConfirmDlgShowFlag] = useState(false);
 
     const isInit = useRef(false);
-    const isCtrl = useRef(false);
-    const isShift = useRef(false);
-    const shiftAnchorIndex = useRef(0);
 
     useEffect(() => {
         window.electronApi.getLocalFileData().then(data => {
             isInit.current = true;
-            setFileList(data);            
+            setFileList(data);
         });
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
 
         window.electronApi.onFileChange(() => {
             initFileList();
         });
 
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-        }
     }, []);
 
     useEffect(() => {
         if (!isInit.current) return;
-        
+
         const playSongs = window.electronApi.getStore(storeKeys.playSongs);
         const playSongsMap = new Map(
             playSongs.map(value => {
@@ -58,18 +54,7 @@ function LocalFile(props) {
             );
         });
         setPlaySongs(playSongsData);
-        
-        const currentSong = window.electronApi.getStore(storeKeys.currentSong);
-        let currentSongData = playSongsData.length === 0 ? null : playSongsData[0];
-        if (currentSong) {
-            fileList.forEach(value => {
-                if (value.path === currentSong.path && value.name === currentSong.name) {
-                    currentSongData = value;
-                }
-            });            
-        }
-        setCurrentSong(currentSongData);
-    
+
     }, [fileList]);
 
     function initFileList() {
@@ -77,85 +62,17 @@ function LocalFile(props) {
             isInit.current = true;
             setFileList(data);
         });
-        setSelectedFiles([]);
-        shiftAnchorIndex.current = 0;
+        initSelect();
     }
 
-    function handleKeyDown(e) {
-        if (e.key === 'Control' || e.key === 'Meta') {
-            isCtrl.current = true;
-        }
-        if (e.key === 'Shift') {
-            isShift.current = true;
-        }
-    }
 
-    function handleKeyUp(e) {
-        if (e.key === 'Control' || e.key === 'Meta') {
-            isCtrl.current = false;
-        }
-        if (e.key === 'Shift') {
-            isShift.current = false;
-        }
-    }
-
-    function clickFile(file, index, selectedFileIds) {
-        // 同时按下Ctrl和Shift时，用Shift多选逻辑生成的数组和已选择的数组合并得到新的数组
-        if (isCtrl.current && isShift.current) {
-            let leftIndex = index;
-            let rightIndex = shiftAnchorIndex.current;
-            if (leftIndex > rightIndex) {
-                [leftIndex, rightIndex] = [rightIndex, leftIndex];
-            }
-            const newSelectedFiles = fileList.filter((value, index) => {
-                if (selectedFileIds.has(value.id)) return true;
-                if (index >= leftIndex && index <= rightIndex) return true;
-                return false;
-            });
-            setSelectedFiles(newSelectedFiles);
-            shiftAnchorIndex.current = index;
-            return;
-        }
-
-        // 按下Ctrl时，支持选择多个和取消选择
-        if (isCtrl.current) {
-            let newSelectedFiles;
-            if (selectedFileIds.has(file.id)) {
-                newSelectedFiles = selectedFiles.filter(value => {
-                    return value.id !== file.id;
-                });
-            } else {
-                newSelectedFiles = [...selectedFiles];
-                newSelectedFiles.push(file);
-            }
-            setSelectedFiles(newSelectedFiles);
-            shiftAnchorIndex.current = index;
-            return;
-        }
-
-        // 按下Shift时，支持批量选择和取消选择（以Shift特定锚元素的索引为起始，和window资源管理器文件逻辑类似）
-        if (isShift.current) {
-            let leftIndex = index;
-            let rightIndex = shiftAnchorIndex.current;
-            if (leftIndex > rightIndex) {
-                [leftIndex, rightIndex] = [rightIndex, leftIndex];
-            }
-            setSelectedFiles(fileList.slice(leftIndex, rightIndex + 1));
-            return;
-        }
-
-        setSelectedFiles([file]);
-        shiftAnchorIndex.current = index;
-    }
-
-    function contextMenuFile(e, file, index, selectedFileIds) {
+    function contextMenuFile(e, file, index) {
         e.preventDefault();
         setMenuPosition({ x: e.clientX, y: e.clientY });
         setIsMenuOpen(true);
+        setMenuItemIndex(index);
 
-        if (selectedFileIds.has(file.id)) return;
-        setSelectedFiles([file]);
-        shiftAnchorIndex.current = index;
+        clickFile(file, index, false);
     }
 
     function addToPlayList(isPlay) {
@@ -183,7 +100,14 @@ function LocalFile(props) {
             setPlaySongs(playSongsData);
         }
         if (isPlay) {
-            setCurrentSong(selectedFiles[0]);
+            const currentSongData = fileList[menuItemIndex];
+            let currentSongIndex = 0;
+            playSongsData.forEach((value, index) => {
+                if (value.id === currentSongData.id) {
+                    currentSongIndex = index;
+                }
+            });
+            setCurrentSong(currentSongData, currentSongIndex);
         }
     }
 
@@ -204,13 +128,14 @@ function LocalFile(props) {
                     className={classNames({
                         file: true,
                         selected: selectedFileIds.has(file.id),
+                        active: file.id === playId
                     })}
                     key={file.id}
                     onClick={() => {
-                        clickFile(file, index, selectedFileIds);
+                        clickFile(file, index);
                     }}
                     onContextMenu={e => {
-                        contextMenuFile(e, file, index, selectedFileIds);
+                        contextMenuFile(e, file, index);
                     }}
                 >
                     <div className='index'>{fileIndex}</div>
@@ -226,11 +151,48 @@ function LocalFile(props) {
     function playAllSongs() {
         setPlaySongs([...fileList]);
         const currentSong = fileList.length === 0 ? null : fileList[0];
-        setCurrentSong(currentSong);
+        setCurrentSong(currentSong, 0);
     }
 
     return (
-        <div className='local_file'>
+        <>
+            <div className='local_file'>
+                <div className='file_operator'>
+                    <div className='play_all_button' onClick={playAllSongs}>
+                        <i className='icon-play' />
+                        播放全部
+                    </div>
+                    <div className='search_input'>
+                        <input
+                            className='input'
+                            placeholder='输入音乐名称搜索'
+                        />
+                        <i className='icon-search' />
+                    </div>
+                </div>
+                <div className='file_list'>
+                    <div className='file title'>
+                        <div className='index'></div>
+                        <div className='name'>音乐名称</div>
+                        <div className='artists'>创作者</div>
+                        <div className='album'>专辑</div>
+                        <div className='duration'>时长</div>
+                    </div>
+                    <div
+                        className='local_file_songs'
+                    >
+                        {getFileListDom()}
+                    </div>
+                </div>
+            </div>
+            
+            <ConfirmDialog
+                showFlag={confirmDlgShowFlag}
+                message="确认要删除选中的歌曲？"
+                onClose={() => { setConfirmDlgShowFlag(false) }}
+                onConfirm={deleteFiles}
+            />
+
             <ControlledMenu
                 anchorPoint={menuPosition}
                 direction='right'
@@ -253,7 +215,7 @@ function LocalFile(props) {
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        const filePath = selectedFiles[0].path;
+                        const filePath = fileList[menuItemIndex].path;
                         window.electronApi.showFileInExplorer(filePath);
                     }}
                 >
@@ -267,42 +229,7 @@ function LocalFile(props) {
                     删除本地文件
                 </MenuItem>
             </ControlledMenu>
-
-            <ConfirmDialog
-                showFlag={confirmDlgShowFlag}
-                message="确认要删除选中的歌曲？"
-                onClose={() => { setConfirmDlgShowFlag(false) }}
-                onConfirm={deleteFiles}
-            />
-            
-            <div className='file_operator'>
-                <div className='play_all_button' onClick={playAllSongs}>
-                    <i className='icon-play' />
-                    播放全部
-                </div>
-                <div className='search_input'>
-                    <input
-                        className='input'
-                        placeholder='输入音乐名称搜索'
-                    />
-                    <i className='icon-search' />
-                </div>
-            </div>
-            <div className='file_list'>
-                <div className='file title'>
-                    <div className='index'></div>
-                    <div className='name'>音乐名称</div>
-                    <div className='artists'>创作者</div>
-                    <div className='album'>专辑</div>
-                    <div className='duration'>时长</div>
-                </div>
-                <div
-                    className='local_file_songs'
-                >
-                    {getFileListDom()}
-                </div>
-            </div>
-        </div>
+        </>
     )
 }
 

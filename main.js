@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const fs = require('fs');
 const fsPromise = require('fs').promises;
 const path = require('path');
-const { parseFile } = require('music-metadata');
+const { parseFile, selectCover } = require('music-metadata');
 const { v4: uuidv4 } = require('uuid');
 const pLimit = require('p-limit');
 const Store = require('electron-store');
@@ -22,11 +22,15 @@ app.on('ready', () => {
     mainWindow.menuBarVisible = false;
     mainWindow.loadURL('http://localhost:3000/');
 
-    fs.watch("D:\\Projects\\Muum\\music", debounce((eventType, filename)=>{
+    mainWindow.on("blur", () => {
+        mainWindow.webContents.send("onWindowBlur");
+    });
+
+    fs.watch("D:\\Projects\\Muum\\music", debounce((eventType, filename) => {
         console.log(eventType);
         console.log(filename);
         mainWindow.webContents.send("onFileChange");
-    }, 100));    
+    }, 100));
 
     ipcMain.handle("getLocalFileData", async () => {
         const musicPath = "D:\\Projects\\Muum\\music";
@@ -57,6 +61,23 @@ app.on('ready', () => {
 
         } catch (e) {
             console.error("read dir fail:", e);
+        }
+    });
+
+    ipcMain.handle("parseSongFile", async (e, filePath) => {
+        try{
+            const metadata = await parseFile(filePath);
+            const { title, picture } = metadata.common;
+            const cover = selectCover(picture);
+            const fileItem = {
+                name: title,
+                path: filePath,
+                cover
+            }
+            return fileItem;
+
+        } catch(e){
+            console.error("parse song fail:", e);
         }
     });
 

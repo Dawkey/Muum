@@ -1,26 +1,48 @@
-import { React, useState, } from 'react';
+import { React, useEffect, useState, } from 'react';
 import PropTypes from 'prop-types';
 import './PlaySongList.scss';
 import { numberToTime } from '../utils/tool';
 import { ControlledMenu, MenuItem } from '@szhsin/react-menu';
+import useSelectList from '../hooks/useSelectList';
+import classNames from 'classnames';
 
 function PlaySongList(props) {
     const {
         showFlag,
         playList,
         playIndex,
-        jumpToSong,        
+        jumpToSong,
+        setPlaySongs,
     } = props;
 
+    const {
+        selectedItems,
+        initSelect,
+        clickItem
+    } = useSelectList(playList, 'playSongList');
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });    
+    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [menuItemIndex, setMenuItemIndex] = useState(0);
+
+    useEffect(() => {
+        initSelect();
+     }, [playList]);
 
     function getSongListDom() {
+        const selectedItemIds = new Set(selectedItems.map(value => value.id));
         return playList.map((song, index) => {
             return (
                 <div
-                    className={`song ${index === playIndex ? 'active' : ''}`}
+                    className={classNames({
+                        song: true,
+                        active: index === playIndex,
+                        selected: selectedItemIds.has(song.id)
+                    })}
                     key={song.id}
+                    onClick={() => {
+                        clickItem(song, index);
+                    }}
                     onDoubleClick={() => {
                         jumpToSong(index);
                     }}
@@ -28,6 +50,9 @@ function PlaySongList(props) {
                         e.preventDefault();
                         setMenuPosition({ x: e.clientX, y: e.clientY });
                         setIsMenuOpen(true);
+                        setMenuItemIndex(index);
+
+                        clickItem(song, index, false);
                     }}
                 >
                     <div className='mark'></div>
@@ -50,8 +75,24 @@ function PlaySongList(props) {
                 state={isMenuOpen ? 'open' : 'closed'}
                 onClose={() => { setIsMenuOpen(false) }}                
             >
-                <MenuItem>播放</MenuItem>
-                <MenuItem>从播放列表中移除</MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        jumpToSong(menuItemIndex);
+                    }}
+                >
+                    播放
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        const selectedItemIds = new Set(selectedItems.map(value => value.id));
+                        const playSongsData = playList.filter(value => {
+                            return !selectedItemIds.has(value.id);
+                        });
+                        setPlaySongs(playSongsData);
+                    }}
+                >
+                    从播放列表中移除
+                </MenuItem>
             </ControlledMenu>
             {getSongListDom()}
         </div>

@@ -1,8 +1,8 @@
 .player_playSongList{
-    z-index: 3;
+    z-index: 10;
     position: absolute;
     right: 0;
-    height: calc(100% - 3rem);
+    height: calc(100% - 4rem);
     background-color: #fcfcfc;
     font-size: 0.9rem;
     user-select: none;
@@ -15,18 +15,26 @@
         &:nth-child(2n){
             background-color: #f6f6f6;
         }
-        &:hover{
-            background-color: #f0f0f0;
-        }
         &.active{
-            background-color: rgb(230,230,230);
-            &:hover{
-                background-color: rgb(225,225,225);
-            }
             .mark{
                 display: block;
             }
-        }         
+            .name{
+                color: #000;
+            }
+            .artist{
+                color: #333;
+            }
+            .duration{
+                color: #999;
+            }
+        }      
+        &.selected{
+            background-color: rgb(225, 225, 225);
+        }
+        &:hover{
+            background-color: rgb(235, 235, 235);
+        }          
         >div{
             text-wrap: nowrap;
             overflow: hidden;
@@ -35,10 +43,12 @@
         .mark{
             position: absolute;
             display: none;
-            width: 0.5rem;
-            height: 0.5rem;
-            background-color: #666;
-            border-radius: 0.1rem;
+            width: 0;
+            height: 0;
+            left: 0.7rem;
+            border-top: 0.3rem solid transparent;
+            border-bottom: 0.3rem solid transparent;
+            border-left: 0.45rem solid #000;
         }
         .name{
             width: 8rem;

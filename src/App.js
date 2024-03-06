@@ -10,12 +10,13 @@ import { storeKeys } from './utils/config';
 
 function App() {
     const [playList, setPlayList] = useState([]);
-    const [playSongId, setPlaySongId] = useState(null);
+    const [playIndex, setPlayIndex] = useState(0);
+    const [playId, setPlayId] = useState('');
+
 
     function setPlaySongs(data) {
         console.log("change play songs");
-        console.log(data);
-        setPlayList(data);
+        console.log(data);        
         const playSongs = data.map(value => {
             return {
                 path: value.path,
@@ -23,33 +24,66 @@ function App() {
             }
         })
         window.electronApi.setStore(storeKeys.playSongs, playSongs);
+        setPlayList(data);
+
+        if(playSongs.length === 0) {
+            setCurrentSong(null);
+            return;
+        }
+
+        const currentSong = window.electronApi.getStore(storeKeys.currentSong);
+        let currentSongData = null;
+        let currentSongIndex = null;
+        if (currentSong) {
+            data.forEach((value, index) => {
+                if (value.path === currentSong.path && value.name === currentSong.name) {
+                    currentSongData = value;
+                    currentSongIndex = index;
+                }
+            });
+        }
+        if(currentSongData === null){
+            if(data[playIndex]){
+                currentSongData = data[playIndex];
+                currentSongIndex = playIndex;
+            }else{
+                currentSongData = data[data.length - 1];
+                currentSongIndex = data.length - 1;
+            }
+        }        
+        setCurrentSong(currentSongData, currentSongIndex);
     }
 
-    function setCurrentSong(data) {
+    function setCurrentSong(data, index) {
         if(data === null){
             window.electronApi.setStore(storeKeys.currentSong, null);
             return;
         }
-        // console.log(data);
-        setPlaySongId(data.id);
         const currentSong = {
             path: data.path,
             name: data.name
         }
         window.electronApi.setStore(storeKeys.currentSong, currentSong);
+
+        setPlayIndex(index);
+        setPlayId(data.id);
     }
 
     return (
         <div className="App">
             {/* <Home/> */}
             <LocalFile
+                playId={playId}
                 setPlaySongs={setPlaySongs}
                 setCurrentSong={setCurrentSong}
             />
 
             <Player
                 playList={playList}
-                playSongId={playSongId}
+                playIndex={playIndex}
+                playId={playId}
+                setPlaySongs={setPlaySongs}
+                setCurrentSong={setCurrentSong}                
             />
         </div>
     );

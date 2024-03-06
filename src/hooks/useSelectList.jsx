@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
+// 列表选择公用逻辑
+function useSelectList(totalList, listKey) {
 
-function useSelectList(fileList) {
-
-    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
     
     const isCtrl = useRef(false);
     const isShift = useRef(false);
@@ -13,6 +13,10 @@ function useSelectList(fileList) {
 
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
+        window.electronApi.onWindowBlur(listKey, () => {
+            isCtrl.current = false;
+            isShift.current = false;
+        });
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
@@ -38,8 +42,22 @@ function useSelectList(fileList) {
         }
     }
 
-    function clickFile(file, index) {
-        const selectedFileIds = new Set(selectedFiles.map(value => value.id));
+    function initSelect() {
+        setSelectedItems([]);
+        shiftAnchorIndex.current = 0;        
+    }
+
+    function clickItem(item, index, isLeft = true) {        
+        const selectedItemIds = new Set(selectedItems.map(value => value.id));
+
+        // 如果为右键，直接选定当前元素，返回
+        if (!isLeft) {
+            if (selectedItemIds.has(item.id)) return;
+            setSelectedItems([item]);
+            shiftAnchorIndex.current = index;
+            return;
+        }
+
         // 同时按下Ctrl和Shift时，用Shift多选逻辑生成的数组和已选择的数组合并得到新的数组
         if (isCtrl.current && isShift.current) {
             let leftIndex = index;
@@ -47,28 +65,28 @@ function useSelectList(fileList) {
             if (leftIndex > rightIndex) {
                 [leftIndex, rightIndex] = [rightIndex, leftIndex];
             }
-            const newSelectedFiles = fileList.filter((value, index) => {
-                if (selectedFileIds.has(value.id)) return true;
+            const newSelectedItems = totalList.filter((value, index) => {
+                if (selectedItemIds.has(value.id)) return true;
                 if (index >= leftIndex && index <= rightIndex) return true;
                 return false;
             });
-            setSelectedFiles(newSelectedFiles);
+            setSelectedItems(newSelectedItems);
             shiftAnchorIndex.current = index;
             return;
         }
 
         // 按下Ctrl时，支持选择多个和取消选择
         if (isCtrl.current) {
-            let newSelectedFiles;
-            if (selectedFileIds.has(file.id)) {
-                newSelectedFiles = selectedFiles.filter(value => {
-                    return value.id !== file.id;
+            let newSelectedItems;
+            if (selectedItemIds.has(item.id)) {
+                newSelectedItems = selectedItems.filter(value => {
+                    return value.id !== item.id;
                 });
             } else {
-                newSelectedFiles = [...selectedFiles];
-                newSelectedFiles.push(file);
+                newSelectedItems = [...selectedItems];
+                newSelectedItems.push(item);
             }
-            setSelectedFiles(newSelectedFiles);
+            setSelectedItems(newSelectedItems);
             shiftAnchorIndex.current = index;
             return;
         }
@@ -80,13 +98,20 @@ function useSelectList(fileList) {
             if (leftIndex > rightIndex) {
                 [leftIndex, rightIndex] = [rightIndex, leftIndex];
             }
-            setSelectedFiles(fileList.slice(leftIndex, rightIndex + 1));
+            setSelectedItems(totalList.slice(leftIndex, rightIndex + 1));
             return;
         }
 
-        setSelectedFiles([file]);
+        setSelectedItems([item]);
         shiftAnchorIndex.current = index;
     }
 
+    return {
+        selectedItems,
+        initSelect,
+        clickItem
+    }
     
 }
+
+export default useSelectList;
