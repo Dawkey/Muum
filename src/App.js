@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import '@szhsin/react-menu/dist/index.css';
 import './assets/icons/style.css';
 import './App.scss';
@@ -6,6 +6,7 @@ import './App.scss';
 // import Home from './views/Home';
 import LocalFile from './views/LocalFile';
 import Player from './views/Player';
+import Live2D from './views/Live2D';
 import { storeKeys } from './utils/config';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
     const [playIndex, setPlayIndex] = useState(0);
     const [playId, setPlayId] = useState('');
 
+    const live2dRef = useRef(null);
 
     function setPlaySongs(data) {
         console.log("change play songs");
@@ -69,6 +71,10 @@ function App() {
         setPlayId(data.id);
     }
 
+    function activeLive2d(){
+        live2dRef.current.changeAnimation();
+    }
+
     return (
         <div className="App">
             {/* <Home/> */}
@@ -83,8 +89,11 @@ function App() {
                 playIndex={playIndex}
                 playId={playId}
                 setPlaySongs={setPlaySongs}
-                setCurrentSong={setCurrentSong}                
+                setCurrentSong={setCurrentSong}   
+                activeLive2d={activeLive2d}
             />
+
+            <Live2D ref={live2dRef}/>
         </div>
     );
 }

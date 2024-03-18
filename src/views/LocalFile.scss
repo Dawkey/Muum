@@ -19,10 +19,10 @@
             color: #f0f0f0;
             font-size: 0.9rem;
             cursor: pointer;
-            .icon-play{
+            .icon-play2{
                 margin-right: 0.3rem;
-                margin-bottom: -0.2rem;
-                font-size: 1.1rem;
+                margin-bottom: -0.15rem;
+                font-size: 1.2rem;
             }
         }
         .search_input{
@@ -67,6 +67,7 @@
             display: flex;
             padding: 0.5rem;
             align-items: center;
+            position: relative;
             &:nth-child(2n){
                 background-color: #f6f6f6;
             }
@@ -82,7 +83,16 @@
                     font-size: 0.85rem;
                     color: #999;
                 }
-            }            
+            }
+            &.active{
+                .mark{
+                    display: block;
+                    position: absolute;
+                    left: 0.7rem;
+                    color: #333;
+                    font-size: 0.85rem;
+                }
+            }
             >div{
                 text-wrap: nowrap;
                 overflow: hidden;
@@ -95,6 +105,9 @@
                 text-align: right;
                 color: #ccc;
                 font-size: 0.9rem;
+            }
+            .mark{
+                display: none;
             }
             .name{
                 width: 40%;

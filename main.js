@@ -11,8 +11,10 @@ Store.initRenderer();
 
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
-        window: 1024,
-        height: 680,
+        width: 960,
+        height: 640,
+        minWidth: 960,
+        minHeight: 640,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,

@@ -2,6 +2,7 @@ import { React, useEffect, useRef, useState, } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { ControlledMenu, MenuItem } from '@szhsin/react-menu';
+import Fuse from 'fuse.js';
 import ConfirmDialog from '../components/ConfirmDialog';
 import './LocalFile.scss';
 import { numberToTime } from '../utils/tool';
@@ -12,6 +13,9 @@ import useSelectList from '../hooks/useSelectList';
 function LocalFile(props) {
     const { playId, setPlaySongs, setCurrentSong } = props;
     const [fileList, setFileList] = useState([]);
+    const [showFileList, setShowFileList] = useState([]);
+    const [searchValue, setSearchValue] = useState("");
+
     const {
         selectedItems: selectedFiles,
         initSelect,
@@ -25,6 +29,7 @@ function LocalFile(props) {
     const [confirmDlgShowFlag, setConfirmDlgShowFlag] = useState(false);
 
     const isInit = useRef(false);
+    const fuze = useRef(null);
 
     useEffect(() => {
         window.electronApi.getLocalFileData().then(data => {
@@ -40,6 +45,13 @@ function LocalFile(props) {
 
     useEffect(() => {
         if (!isInit.current) return;
+
+        const fuzeOptions = {
+            keys: ["name", "artists", "album"],
+            includeMatches: true,
+            threshold: 0.1
+        }
+        fuze.current = new Fuse(fileList, fuzeOptions);
 
         const playSongs = window.electronApi.getStore(storeKeys.playSongs);
         const playSongsMap = new Map(
@@ -138,6 +150,9 @@ function LocalFile(props) {
                         contextMenuFile(e, file, index);
                     }}
                 >
+                    <div className='mark'>
+                        <i  className='icon-play2'/>
+                    </div>
                     <div className='index'>{fileIndex}</div>
                     <div className='name' title={file.name}>{file.name}</div>
                     <div className='artists' title={fileArtists}>{fileArtists}</div>
@@ -154,18 +169,37 @@ function LocalFile(props) {
         setCurrentSong(currentSong, 0);
     }
 
+    function searchFiles(value) {        
+        setSearchValue(value);
+        if (value === "") {
+            setShowFileList([...fileList]);
+            return;
+        }        
+        const searchList = fuze.current.search(value);
+        const handleList = searchList.map(listItem => {
+            const { item, matches } = listItem;
+            return item;
+        });
+        setShowFileList(handleList);
+    }
+
     return (
         <>
             <div className='local_file'>
                 <div className='file_operator'>
                     <div className='play_all_button' onClick={playAllSongs}>
-                        <i className='icon-play' />
+                        <i className='icon-play2' />
                         播放全部
                     </div>
                     <div className='search_input'>
                         <input
                             className='input'
-                            placeholder='输入音乐名称搜索'
+                            placeholder='搜索本地音乐'
+                            onChange={e => {
+                                const value = e.target.value;
+                                searchFiles(value);
+                            }}
+                            value={searchValue}
                         />
                         <i className='icon-search' />
                     </div>

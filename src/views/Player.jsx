@@ -5,7 +5,7 @@ import PlaySongList from '../components/PlaySongList';
 import { numberToTime, shuffleArray } from '../utils/tool';
 
 function Player(props) {
-    const { playList, playIndex, playId, setPlaySongs, setCurrentSong } = props;
+    const { playList, playIndex, playId, setPlaySongs, setCurrentSong, activeLive2d } = props;
 
     const [playStatus, setPlayStatus] = useState(false);
     // 0-顺序播放 1-随机播放 2-单曲循环
@@ -15,7 +15,10 @@ function Player(props) {
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioVolume, setAudioVolume] = useState(0.2);
-    const [audioCover, setAudioCover] = useState("");
+
+    const [songCover, setSongCover] = useState("");
+    const [songName, setSongName] = useState("");
+    const [songArtists, setSongArtists] = useState([]);
 
     // audioBarDragFlag、volumeBarDragFlag用来判定是否正在拖动进度条
     // audioBarDragProgress用来控制拖动音频进度条时的进度，因为不希望拖动时立刻改变音频进度，所以需要一个额外的变量来存储
@@ -29,7 +32,7 @@ function Player(props) {
 
     // currentIndex: 当前播放歌曲在 indexs乱序索引数组中的位置（索引）
     // indexs: 随机播放使用的乱序索引数组
-    const randomPlayIndexs = useRef({ currentIndex: 0, indexs: [] });    
+    const randomPlayIndexs = useRef({ currentIndex: 0, indexs: [] });
 
     const $audio = useRef(null);
     const $audioProgressBar = useRef(null);
@@ -66,16 +69,23 @@ function Player(props) {
     useEffect(() => {
         if (playList.length === 0) return;
         const song = playList[playIndex];
-        const { path } = song;
+        const { path, name, artists } = song;
         setAudioSrc(path);
+        setSongName(name);
+        setSongArtists(artists);
         randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playIndex);
 
         window.electronApi.parseSongFile(path).then(data => {
             const { name, path, cover } = data;
-            const coverUrl = URL.createObjectURL(new Blob([cover.data]));
-            setAudioCover(coverUrl);
+            // 判断name和path是否和当前播放歌曲一致
+            // 避免解析过慢，歌曲已经切换为其他歌曲，造成覆盖
+            if (name === playList[playIndex].name &&
+                path === playList[playIndex].path) {
+                const coverUrl = URL.createObjectURL(new Blob([cover.data]));
+                setSongCover(coverUrl);
+            }
         });
-        
+
     }, [playId]);
 
     // 播放模式切换到随机播放时，重新打乱索引数组
@@ -96,7 +106,7 @@ function Player(props) {
             window.removeEventListener('mousemove', dragProgress);
             window.removeEventListener('mouseup', dropProgress);
         }
-    }, [audioBarDragFlag, volumeBarDragFlag]);    
+    }, [audioBarDragFlag, volumeBarDragFlag]);
 
     useEffect(() => {
         $audio.current.volume = audioVolume;
@@ -137,6 +147,7 @@ function Player(props) {
             setPlayStatus(false);
             $audio.current.pause();
         } else {
+            activeLive2d();
             setPlayStatus(true);
             $audio.current.play();
         }
@@ -295,12 +306,15 @@ function Player(props) {
                 <div className='player_operator'>
 
                     <div className='operator_left'>
-                        <div className='cover'>
-                            <img src={audioCover} alt=''/>
+                        <div className='song_cover'>
+                            <img src={songCover} alt='' />
                         </div>
-                        <div></div>
+                        <div className='song_info'>
+                            <div className='song_name'>{songName}</div>
+                            <div className='song_artists'>{songArtists.join('/')}</div>
+                        </div>
                     </div>
-                    
+
                     <div className='operator_middle'>
                         <div className='operator_play'>
                             <i
@@ -315,7 +329,7 @@ function Player(props) {
                                 className='icon-next'
                                 onClick={nextSong}
                             />
-                        </div>                        
+                        </div>
                         <div className='operator_bar'>
                             <div className='time'>
                                 {numberToTime(audioCurrentTime)}
@@ -383,7 +397,7 @@ function Player(props) {
                     </div>
                 </div>
             </div>
-            
+
             <PlaySongList
                 showFlag={playSongListShowFlag}
                 playList={playList}

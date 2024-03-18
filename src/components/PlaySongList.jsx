@@ -55,7 +55,9 @@ function PlaySongList(props) {
                         clickItem(song, index, false);
                     }}
                 >
-                    <div className='mark'></div>
+                    <div className='mark'>
+                        <i  className='icon-play2'/>
+                    </div>
                     <div className='name'>{song.name}</div>
                     <div className='artist'>{song.artists.join("/")}</div>
                     <div className='duration'>{numberToTime(song.duration)}</div>
@@ -94,7 +96,22 @@ function PlaySongList(props) {
                     从播放列表中移除
                 </MenuItem>
             </ControlledMenu>
-            {getSongListDom()}
+
+            <div className='play_list_top'>
+                <div className='total'>共{playList.length}首</div>
+                <div
+                    className='clear_list'
+                    onClick={() => {
+                        setPlaySongs([]);
+                    }}
+                >
+                    清空列表
+                </div>
+            </div>
+
+            <div className='play_list_body'>
+                {getSongListDom()}
+            </div>            
         </div>
     )
 }
