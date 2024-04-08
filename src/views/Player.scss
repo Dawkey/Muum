@@ -6,29 +6,7 @@
     left: 0;
     bottom: 0;    
     user-select: none;
-
-    .player_disc{
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        .needle{
-            position: absolute;
-            top: -5.2rem;
-            left: 6.3rem;
-            width: 5rem;
-            height: 8rem;
-            background-image: url("../assets/images/img_needle.png");
-            background-size: contain;
-        }
-        .disc{
-            width: 15rem;
-            height: 15rem;
-            background-image: url("../assets/images/img_disc.png");
-            background-size: cover;
-        }
-    }
+    background-color: inherit;
 
     .player_operator{
         position: relative;
@@ -37,14 +15,17 @@
         height: 100%;
         align-items: center;
         justify-content: space-between;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid var(--border-color);
         padding: 0 0.5rem;
         box-sizing: border-box;
         i{
-            color: #333;
+            color: var(--global-ft-color1);
             cursor: pointer;
         }
 
+        .hide{
+            visibility: hidden;
+        }
         .operator_left{
             flex: 1;
             display: flex;
@@ -52,11 +33,9 @@
             .song_cover{
                 width: 3rem;
                 height: 3rem;
-                background-color: #666;
                 border-radius: 0.2rem;
-                border: 1px solid #ddd;
+                border: 1px solid var(--border-color);
                 overflow: hidden;
-                cursor: pointer;
                 >img{
                     width: 100%;
                     height: 100%;
@@ -72,11 +51,11 @@
                 }
                 .song_name{
                     font-size: 0.95rem;
-                    color: #333;
+                    color: var(--global-ft-color1);
                 }
                 .song_artists{
                     font-size: 0.85rem;
-                    color: #666;
+                    color: var(--global-ft-color2);
                     margin-top: 0.3rem;
                 }
             }
@@ -109,7 +88,7 @@
                     position: relative;
                     height: 0.4rem;
                     flex-grow: 1;
-                    background-color: #ccc;
+                    background-color: var(--bar-bg-color);
                     display: flex;
                     align-items: center;
                     border-radius: 0.2rem;
@@ -118,7 +97,7 @@
                         position: absolute;
                         width: 0;
                         height: 100%;                    
-                        background-color: #555;
+                        background-color: var(--global-active-color);
                         border-radius: 0.2rem;
                     }
                     .dot{
@@ -126,7 +105,7 @@
                         left: 0;
                         height: 0.65rem;
                         width: 0.65rem;
-                        background-color: #555;
+                        background-color: var(--global-active-color);
                         transform: translateX(-50%);
                         border-radius: 50%;
                     }
@@ -136,8 +115,7 @@
                     font-size: 0.75rem;
                     line-height: 100%;
                     margin: 0 0.5rem;
-                    margin-top: -0.1rem;
-                    color: #999;
+                    color: var(--global-ft-color2-5);
                 }
             }            
         }
@@ -177,15 +155,15 @@
                         padding: 0.5rem 0;
                         display: flex;
                         justify-content: center;
-                        background-color: #fcfcfc;
-                        border: 1px solid #ddd;
+                        background-color: var(--global-bg-color1-5);
+                        border: 1px solid var(--border-color);
                         .bar{
                             position: relative;
                             height: 6rem;
                             width: 0.4rem;
                             display: flex;
                             justify-content: center;
-                            background-color: #ccc;
+                            background-color: var(--bar-bg-color);
                             border-radius: 0.2rem;
                             cursor: pointer;
                             .progress_bar{                    
@@ -193,7 +171,7 @@
                                 bottom: 0;
                                 width: 100%;
                                 height: 0;
-                                background-color: #555;
+                                background-color: var(--global-active-color);
                                 border-radius: 0.2rem;
                             }
                             .dot{
@@ -201,7 +179,7 @@
                                 bottom: 0;
                                 height: 0.6rem;
                                 width: 0.6rem;
-                                background-color: #555;
+                                background-color: var(--global-active-color);
                                 transform: translateY(50%);
                                 border-radius: 50%;                            
                             }

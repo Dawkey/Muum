@@ -1,8 +1,10 @@
 import { React, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import './Player.scss';
 import PlaySongList from '../components/PlaySongList';
 import { numberToTime, shuffleArray } from '../utils/tool';
+import { storeKeys } from '../utils/config';
 
 function Player(props) {
     const { playList, playIndex, playId, setPlaySongs, setCurrentSong, activeLive2d } = props;
@@ -14,7 +16,7 @@ function Player(props) {
     const [audioSrc, setAudioSrc] = useState("");
     const [audioCurrentTime, setAudioCurrentTime] = useState(0);
     const [audioDuration, setAudioDuration] = useState(0);
-    const [audioVolume, setAudioVolume] = useState(0.2);
+    const [audioVolume, setAudioVolume] = useState(null);
 
     const [songCover, setSongCover] = useState("");
     const [songName, setSongName] = useState("");
@@ -53,6 +55,15 @@ function Player(props) {
 
 
     useEffect(() => {
+        let initPlayMode = window.electronApi.getStore(storeKeys.playMode);
+        let initVolume = window.electronApi.getStore(storeKeys.volume);
+        initPlayMode = initPlayMode === undefined ? 1 : initPlayMode;
+        initVolume = initVolume === undefined ? 0.2 : initVolume;
+        setPlayMode(initPlayMode);
+        setAudioVolume(initVolume);
+    }, []);
+
+    useEffect(() => {
         if (playList.length === 0) return;
 
         console.log("play list change.");
@@ -61,13 +72,20 @@ function Player(props) {
             .map((value, index) => index);
         randomPlayIndexs.current.indexs = shuffleArray(indexs);
         randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playIndex);
-
     }, [playList]);
 
 
     // 播放歌曲ID变化时，更换audio路径等相关逻辑
     useEffect(() => {
+        if (playId === null) {
+            setPlayStatus(false);
+            setAudioSrc('');
+            setAudioCurrentTime(0);
+            setAudioDuration(0);
+            return;
+        }
         if (playList.length === 0) return;
+
         const song = playList[playIndex];
         const { path, name, artists } = song;
         setAudioSrc(path);
@@ -89,8 +107,9 @@ function Player(props) {
     }, [playId]);
 
     // 播放模式切换到随机播放时，重新打乱索引数组
-    useEffect(() => {
+    useEffect(() => {        
         if (playList.length === 0) return;
+        window.electronApi.setStore(storeKeys.playMode, playMode);
         if (playMode === 1) {
             const { indexs } = randomPlayIndexs.current;
             randomPlayIndexs.current.indexs = shuffleArray(indexs);
@@ -109,14 +128,15 @@ function Player(props) {
     }, [audioBarDragFlag, volumeBarDragFlag]);
 
     useEffect(() => {
+        if (audioVolume === null) return;
         $audio.current.volume = audioVolume;
+        window.electronApi.setStore(storeKeys.volume ,audioVolume);
     }, [audioVolume]);
 
     // 音频加载时
     function audioLoad() {
         setAudioCurrentTime(0);
         setAudioDuration($audio.current.duration);
-        console.log($audio.current);
         if (playStatus) {
             $audio.current.play();
         }
@@ -143,6 +163,7 @@ function Player(props) {
 
     // 音乐播放和暂停
     function toggleSong() {
+        if (audioSrc === '') return;
         if (playStatus) {
             setPlayStatus(false);
             $audio.current.pause();
@@ -183,7 +204,6 @@ function Player(props) {
     function clickAudioProgress(e) {
         const progress = calculateAudioProgress(e);
         const currentTime = progress * audioDuration;
-        $audio.current.currentTime = currentTime;
         setAudioCurrentTime(currentTime);
         setAudioBarDragFlag(true);
     }
@@ -206,7 +226,6 @@ function Player(props) {
     // 点击【音量】进度条
     function clickVolumeProgress(e) {
         const progress = calculateVolumeProgress(e);
-        console.log(progress);
         setAudioVolume(progress);
         setVolumeBarDragFlag(true);
     }
@@ -259,6 +278,7 @@ function Player(props) {
     // 切换歌曲上一曲、下一曲
     // 当播放模式为随机播放时，使用乱序索引数组；否则顺序播放（单曲循环也是）
     function switchSong(order) {
+        if (audioSrc === '') return;
         const orderNum = order === 'next' ? 1 : -1;
         const modeIndex = playMode === 1 ? randomPlayIndexs.current.currentIndex : playIndex;
 
@@ -298,14 +318,12 @@ function Player(props) {
                 >
                 </audio>
 
-                {/* <div className='player_disc'>
-                    <div className='needle'></div>
-                    <div className='disc'></div>
-                </div> */}
-
                 <div className='player_operator'>
 
-                    <div className='operator_left'>
+                    <div className={classNames({
+                        operator_left: true,
+                        hide: audioSrc === ''
+                    })}>
                         <div className='song_cover'>
                             <img src={songCover} alt='' />
                         </div>
@@ -353,7 +371,11 @@ function Player(props) {
                             </div>
                         </div>
                     </div>
-                    <div className='operator_right'>
+
+                    <div className={classNames({
+                        operator_right: true,
+                        hide: audioSrc === ''
+                    })}>
                         <i
                             className={`icon-playMode icon-playMode${playMode}`}
                             onClick={togglePlayMode}

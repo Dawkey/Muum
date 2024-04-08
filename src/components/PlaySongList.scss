@@ -1,12 +1,13 @@
-.player_playSongList{
+.playSongList{
     z-index: 10;
     position: absolute;
     right: 0;
     height: calc(100% - 4rem);
-    background-color: #fcfcfc;
-    font-size: 0.9rem;
+    background-color: inherit;
     user-select: none;
-    border-left: 1px solid #ddd;
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
 
     .play_list_top{
         display: flex;
@@ -15,44 +16,39 @@
         font-size: 0.8rem;
         .total{
             margin-left: 1rem;
-            color: #999;            
+            color: var(--global-ft-color2-5);
         }
         .clear_list{
             margin-right: 1rem;
             cursor: pointer;
-            color: #000;
+            color: var(--global-ft-color1);
         }
     }
 
     .play_list_body{
-        width: 25rem;
+        width: 35vw;
+        min-width: 22rem;
+        max-width: 33rem;
+        background-color: var(--list-bg-color1);
+        overflow: auto;
         .song{
             display: flex;
             padding: 0.5rem;
             align-items: center;
             position: relative;
             &:nth-child(2n-1){
-                background-color: #f6f6f6;
+                background-color: var(--list-bg-color2);
             }
             &.active{
                 .mark{
                     display: block;
                 }
-                .name{
-                    color: #000;
-                }
-                .artist{
-                    color: #333;
-                }
-                .duration{
-                    color: #999;
-                }
             }      
             &.selected{
-                background-color: rgb(225, 225, 225);
+                background-color: var(--list-select-bg-color);
             }
             &:hover{
-                background-color: rgb(235, 235, 235);
+                background-color: var(--list-hover-bg-color);
             }          
             >div{
                 text-wrap: nowrap;
@@ -64,22 +60,25 @@
                 display: none;
                 font-size: 0.8rem;
                 margin-bottom: -0.1rem;
+                color: var(--global-active-color);
             }
             .name{
-                width: 11rem;
-                color: #333;
+                width: 65%;
+                color: var(--global-ft-color1);
                 margin-left: 1rem;
+                font-size: 0.85rem;
             }
             .artist{
-                width: 7rem;
-                color: #999;
-                margin: 0 1rem;
+                width: 35%;
+                color: var(--global-ft-color2);
+                margin: 0 1.5rem;
                 font-size: 0.85rem;
             }
             .duration{
-                width: 3rem;
-                color: #ccc;
-                font-size: 0.8rem;
+                flex-shrink: 0;
+                margin-right: 1rem;
+                color: var(--global-ft-color3);
+                font-size: 0.85rem;
             }
         }
     }

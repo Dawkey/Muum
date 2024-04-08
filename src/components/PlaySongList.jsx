@@ -68,7 +68,7 @@ function PlaySongList(props) {
 
     return (
         <div
-            className='player_playSongList'
+            className='playSongList'
             style={showFlag ? null : { display: 'none' }}
         >
             <ControlledMenu

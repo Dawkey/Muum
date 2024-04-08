@@ -1,20 +1,44 @@
 html,body{
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
 
+    .app{        
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        .app-body{
+            color: var(--global-ft-color1);
+            background-color: var(--global-bg-color1);
+            position: relative;
+            height: 100%;
+        }
+    }
     .szh-menu-container{
         font-size: 0.85rem;
         .szh-menu{
-            background-color: #fcfcfc;
+            color: var(--global-ft-color1);
+            background-color: var(--global-bg-color1);
             padding: 0.5rem 0;
             border-radius: 0.2rem;
-            min-width: auto;
+            min-width: auto;            
             .szh-menu__item{
                 padding: 0.4rem 0.8rem;
                 &:hover{
-                    background-color: #f0f0f0;
+                    background-color: var(--global-bg-color2);
                 }
             }
+        }
+    }
+
+    ::-webkit-scrollbar{
+        width: 0.75rem;
+    }
+
+    ::-webkit-scrollbar-thumb{
+        background-color: var(--global-bg-color2);
+        opacity: 0;
+        &:hover{
+            background-color: var(--list-hover-bg-color);
         }
     }
 }

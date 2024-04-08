@@ -1,0 +1,27 @@
+.top-menu{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+    -webkit-app-region: drag;
+    >i{
+        display: block;
+        line-height: 2.5rem;
+        width: 3rem;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--global-ft-color1);
+        -webkit-app-region: no-drag;
+        &:hover{
+            background-color: var(--global-bg-color2);
+        }
+    }
+    .icon-close{
+        padding-right: 0.25rem;
+        &:hover{
+            background-color: red;
+            color: var(--global-bg-color1)
+        }        
+    }
+}

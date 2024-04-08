@@ -2,10 +2,12 @@
     position: absolute;
     z-index: 9;
     width: 100%;
-    height: calc(100% - 3rem);
+    height: calc(100% - 4rem);
     box-sizing: border-box;
     padding: 1.5rem;
     user-select: none;
+    background-color: inherit;
+    overflow: auto;
     .file_operator{
         display: flex;
         justify-content: space-between;
@@ -15,8 +17,8 @@
             padding: 0 1.2rem;
             height: 2.2rem;
             border-radius: 0.2rem;
-            background-color: #666;
-            color: #f0f0f0;
+            background-color: var(--global-active-color);
+            color: var(--global-bg-color2);
             font-size: 0.9rem;
             cursor: pointer;
             .icon-play2{
@@ -30,8 +32,8 @@
             height: 2.2rem;
             width: 14rem;
             border-radius: 0.2rem;
-            background-color: #f0f0f0;
-            color: #333;  
+            background-color: var(--global-bg-color2);
+            color: var(--global-ft-color1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -50,7 +52,7 @@
                     outline: 0;
                 }
                 &::placeholder{
-                    color: #bbb;
+                    color: var(--global-ft-color3);
                 }
             }            
             .icon-search{
@@ -62,26 +64,26 @@
     }
     .file_list{
         margin-top: 1rem;
-        background-color: #fcfcfc;
+        background-color: var(--list-bg-color1);
         .file{
             display: flex;
             padding: 0.5rem;
             align-items: center;
             position: relative;
             &:nth-child(2n){
-                background-color: #f6f6f6;
+                background-color: var(--list-bg-color2);
             }
             &.selected{
-                background-color: rgb(225, 225, 225);
+                background-color: var(--list-select-bg-color);
             }            
             &:hover{
-                background-color: rgb(235, 235, 235);
+                background-color: var(--list-hover-bg-color);
             }
             &.title{
-                background-color: #f6f6f6;
+                background-color: var(--list-bg-color2);
                 >div{
                     font-size: 0.85rem;
-                    color: #999;
+                    color: var(--global-ft-color2-5);
                 }
             }
             &.active{
@@ -89,7 +91,7 @@
                     display: block;
                     position: absolute;
                     left: 0.7rem;
-                    color: #333;
+                    color: var(--global-active-color);
                     font-size: 0.85rem;
                 }
             }
@@ -103,7 +105,7 @@
                 width: 2.5rem;
                 flex-shrink: 0;
                 text-align: right;
-                color: #ccc;
+                color: var(--global-ft-color3);
                 font-size: 0.9rem;
             }
             .mark{
@@ -111,24 +113,27 @@
             }
             .name{
                 width: 40%;
-                color: #333;
-                font-size: 0.95rem;
+                color: var(--global-ft-color1);
+                font-size: 0.9rem;
             }
             .artists{
                 width: 30%;
-                color: #666;
+                color: var(--global-ft-color2);
                 font-size: 0.9rem;
             }
             .album{
                 width: 30%;
-                color: #999;
+                color: var(--global-ft-color2);
                 font-size: 0.9rem;
             }
             .duration{
                 width: 3rem;
                 flex-shrink: 0;
-                color: #bbb;
+                color: var(--global-ft-color3);
                 font-size: 0.9rem;
+            }
+            .high-light{
+                color: red;
             }
         }
     }

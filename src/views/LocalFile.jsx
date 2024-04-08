@@ -20,7 +20,7 @@ function LocalFile(props) {
         selectedItems: selectedFiles,
         initSelect,
         clickItem: clickFile
-    } = useSelectList(fileList, 'localFileList');
+    } = useSelectList(showFileList, 'localFileList');
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -52,8 +52,11 @@ function LocalFile(props) {
             threshold: 0.1
         }
         fuze.current = new Fuse(fileList, fuzeOptions);
+        searchFiles(searchValue);
 
-        const playSongs = window.electronApi.getStore(storeKeys.playSongs);
+        let playSongs = window.electronApi.getStore(storeKeys.playSongs);
+        // 初次允许时，初始化播放列表数据
+        playSongs = playSongs === undefined ? [] : playSongs;
         const playSongsMap = new Map(
             playSongs.map(value => {
                 return [value.path, value.name];
@@ -131,7 +134,7 @@ function LocalFile(props) {
     function getFileListDom() {
         const selectedFileIds = new Set(selectedFiles.map(value => value.id));
 
-        return fileList.map((file, index) => {
+        return showFileList.map((file, index) => {
             const fileIndex = index + 1 < 10 ? `0${index + 1}` : index + 1;
             const fileArtists = file.artists.join("/");
             const fileDuration = numberToTime(file.duration);
@@ -154,9 +157,9 @@ function LocalFile(props) {
                         <i  className='icon-play2'/>
                     </div>
                     <div className='index'>{fileIndex}</div>
-                    <div className='name' title={file.name}>{file.name}</div>
-                    <div className='artists' title={fileArtists}>{fileArtists}</div>
-                    <div className='album' title={file.album}>{file.album}</div>
+                    <div className='name' title={file.name}>{file.showInfo.name}</div>
+                    <div className='artists' title={fileArtists}>{file.showInfo.artists}</div>
+                    <div className='album' title={file.album}>{file.showInfo.album}</div>
                     <div className='duration'>{fileDuration}</div>
                 </div>
             )
@@ -169,15 +172,53 @@ function LocalFile(props) {
         setCurrentSong(currentSong, 0);
     }
 
-    function searchFiles(value) {        
+    function searchFiles(value) {
+        initSelect();
         setSearchValue(value);
         if (value === "") {
-            setShowFileList([...fileList]);
+            const list = fileList.map(item => {
+                item.showInfo = {
+                    name: item.name,
+                    artists: item.artists.join('/'),
+                    album: item.album
+                }
+                return item;
+            })
+            setShowFileList(list);
             return;
         }        
         const searchList = fuze.current.search(value);
+        console.log(searchList);
         const handleList = searchList.map(listItem => {
             const { item, matches } = listItem;
+            item.showInfo = {
+                name: item.name,
+                artists: item.artists.join('/'),
+                album: item.album
+            }
+            const { key, value, indices } = matches[0];
+            const [start, end] = indices[0];
+            const highLightValue = [
+                value.slice(0, start),
+                <span className='high-light' key='high-light'>{value.slice(start, end+1)}</span>,
+                value.slice(end+1)
+            ];
+            if (key === 'artists') {
+                const { refIndex } = matches[0];
+                const artists = [...item.artists];
+                artists[refIndex] = highLightValue;
+                artists.forEach((value, index) => {
+                    if (index === artists.length - 1) return;
+                    if (index === refIndex) {
+                        value.push("/");
+                    } else {
+                        artists[index] = value + "/";                            
+                    }
+                });
+                item.showInfo.artists = artists;
+            } else {
+                item.showInfo[key] = highLightValue;                
+            }            
             return item;
         });
         setShowFileList(handleList);

@@ -11,6 +11,7 @@ Store.initRenderer();
 
 app.on('ready', () => {
     let mainWindow = new BrowserWindow({
+        frame: false,
         width: 960,
         height: 640,
         minWidth: 960,
@@ -67,7 +68,7 @@ app.on('ready', () => {
     });
 
     ipcMain.handle("parseSongFile", async (e, filePath) => {
-        try{
+        try {
             const metadata = await parseFile(filePath);
             const { title, picture } = metadata.common;
             const cover = selectCover(picture);
@@ -78,7 +79,7 @@ app.on('ready', () => {
             }
             return fileItem;
 
-        } catch(e){
+        } catch (e) {
             console.error("parse song fail:", e);
         }
     });
@@ -99,6 +100,22 @@ app.on('ready', () => {
         catch (e) {
             console.error("delete dir fail:", e);
         }
+    });
+
+    ipcMain.on("minWindow", () => {
+        mainWindow.minimize();
+    });
+
+    ipcMain.on("maxWindow", ()=>{
+        if(mainWindow.isMaximized()){
+            mainWindow.unmaximize();
+        }else{
+            mainWindow.maximize();
+        }
+    });
+
+    ipcMain.on("closeWindow", ()=>{
+        mainWindow.close();
     });
 
 });

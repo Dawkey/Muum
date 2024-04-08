@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 import '@szhsin/react-menu/dist/index.css';
 import './assets/icons/style.css';
+import './themes/index.scss';
 import './App.scss';
 
+import TopMenu from './views/TopMenu';
 // import Home from './views/Home';
 import LocalFile from './views/LocalFile';
 import Player from './views/Player';
@@ -17,8 +19,6 @@ function App() {
     const live2dRef = useRef(null);
 
     function setPlaySongs(data) {
-        console.log("change play songs");
-        console.log(data);        
         const playSongs = data.map(value => {
             return {
                 path: value.path,
@@ -59,6 +59,8 @@ function App() {
     function setCurrentSong(data, index) {
         if(data === null){
             window.electronApi.setStore(storeKeys.currentSong, null);
+            setPlayIndex(-1);
+            setPlayId(null);
             return;
         }
         const currentSong = {
@@ -76,22 +78,27 @@ function App() {
     }
 
     return (
-        <div className="App">
-            {/* <Home/> */}
-            <LocalFile
-                playId={playId}
-                setPlaySongs={setPlaySongs}
-                setCurrentSong={setCurrentSong}
-            />
+        <div className="app white">
+            <TopMenu/>
 
-            <Player
-                playList={playList}
-                playIndex={playIndex}
-                playId={playId}
-                setPlaySongs={setPlaySongs}
-                setCurrentSong={setCurrentSong}   
-                activeLive2d={activeLive2d}
-            />
+            <div className='app-body'>
+                {/* <Home/> */}
+
+                <LocalFile
+                    playId={playId}
+                    setPlaySongs={setPlaySongs}
+                    setCurrentSong={setCurrentSong}
+                />
+
+                <Player
+                    playList={playList}
+                    playIndex={playIndex}
+                    playId={playId}
+                    setPlaySongs={setPlaySongs}
+                    setCurrentSong={setCurrentSong}   
+                    activeLive2d={activeLive2d}
+                />
+            </div>
 
             <Live2D ref={live2dRef}/>
         </div>

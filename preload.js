@@ -48,6 +48,18 @@ const electronApi = {
                 callBack();
             })
         });
+    },
+
+    minWindow: () => {
+        ipcRenderer.send('minWindow');
+    },
+
+    maxWindow: () => {
+        ipcRenderer.send('maxWindow');
+    },
+
+    closeWindow: () => {
+        ipcRenderer.send('closeWindow');
     }
 }
 
