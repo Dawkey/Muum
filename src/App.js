@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '@szhsin/react-menu/dist/index.css';
 import './assets/icons/style.css';
 import './themes/index.scss';
 import './App.scss';
 
 import TopMenu from './views/TopMenu';
-// import Home from './views/Home';
+import Setting from './components/Setting';
 import LocalFile from './views/LocalFile';
 import Player from './views/Player';
 import Live2D from './views/Live2D';
@@ -14,9 +14,46 @@ import { storeKeys } from './utils/config';
 function App() {
     const [playList, setPlayList] = useState([]);
     const [playIndex, setPlayIndex] = useState(0);
+    const [playStatus, setPlayStatus] = useState(false);
     const [playId, setPlayId] = useState('');
 
+    const initFlag = useRef(false);
     const live2dRef = useRef(null);
+
+    initStoreData();
+
+    useEffect(()=>{
+        let songPath = window.electronApi.getStore(storeKeys.songPath);
+        window.electronApi.watchSongPath(songPath);
+    }, []);
+
+    function initStoreData() {
+        if(initFlag.current){
+            return;
+        }
+        initFlag.current = true;
+
+        let songPath = window.electronApi.getStore(storeKeys.songPath);
+        let currentSong = window.electronApi.getStore(storeKeys.currentSong);
+        let playSongs = window.electronApi.getStore(storeKeys.playSongs);
+        let playMode = window.electronApi.getStore(storeKeys.playMode);
+        let volume = window.electronApi.getStore(storeKeys.volume);
+        let closeMode = window.electronApi.getStore(storeKeys.closeMode);
+
+        songPath = songPath ? songPath : "";
+        currentSong = currentSong ? currentSong : null;
+        playSongs = playSongs ? playSongs: [];
+        playMode = playMode ? playMode : 1;
+        volume = volume ? volume : 0.2;
+        closeMode = closeMode ? closeMode : 1;
+
+        window.electronApi.setStore(storeKeys.songPath, songPath);
+        window.electronApi.setStore(storeKeys.currentSong, currentSong);
+        window.electronApi.setStore(storeKeys.playSongs, playSongs);
+        window.electronApi.setStore(storeKeys.playMode, playMode);
+        window.electronApi.setStore(storeKeys.volume, volume);
+        window.electronApi.setStore(storeKeys.closeMode, closeMode);
+    }    
 
     function setPlaySongs(data) {
         const playSongs = data.map(value => {
@@ -81,21 +118,23 @@ function App() {
         <div className="app white">
             <TopMenu/>
 
-            <div className='app-body'>
-                {/* <Home/> */}
-
+            <div className='app-body'>                
                 <LocalFile
                     playId={playId}
                     setPlaySongs={setPlaySongs}
                     setCurrentSong={setCurrentSong}
+                    setPlayStatus={setPlayStatus}
+                    activeLive2d={activeLive2d}
                 />
 
                 <Player
                     playList={playList}
                     playIndex={playIndex}
+                    playStatus={playStatus}
                     playId={playId}
                     setPlaySongs={setPlaySongs}
-                    setCurrentSong={setCurrentSong}   
+                    setCurrentSong={setCurrentSong}
+                    setPlayStatus={setPlayStatus}
                     activeLive2d={activeLive2d}
                 />
             </div>

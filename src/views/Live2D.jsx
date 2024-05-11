@@ -32,7 +32,7 @@ function Live2D(props, ref) {
                 padRight: 0,
                 padTop: 0,
                 padBottom: 0,
-                transitionTime: 0
+                transitionTime: 0,
             }
         });
     }, []);
@@ -52,7 +52,10 @@ function Live2D(props, ref) {
 
 
     return (
-        <div className='live2d' id='muum-live2d'></div>
+        <>
+            <div className='live2d' id='muum-live2d'></div>
+            <div className='refer'></div>
+        </>
     )
 }
 

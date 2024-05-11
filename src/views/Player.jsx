@@ -7,9 +7,17 @@ import { numberToTime, shuffleArray } from '../utils/tool';
 import { storeKeys } from '../utils/config';
 
 function Player(props) {
-    const { playList, playIndex, playId, setPlaySongs, setCurrentSong, activeLive2d } = props;
+    const {
+        playList,
+        playIndex,
+        playStatus,
+        playId,
+        setPlaySongs,
+        setCurrentSong,
+        setPlayStatus,
+        activeLive2d
+    } = props;
 
-    const [playStatus, setPlayStatus] = useState(false);
     // 0-顺序播放 1-随机播放 2-单曲循环
     const [playMode, setPlayMode] = useState(1);
 
@@ -36,6 +44,12 @@ function Player(props) {
     // indexs: 随机播放使用的乱序索引数组
     const randomPlayIndexs = useRef({ currentIndex: 0, indexs: [] });
 
+    // 记录前一次的当前播放时间，用于让进度条随着时间每秒跳动而变动
+    const prevAudioCurrentTime = useRef(0);
+
+    // 用于控制live2D是否动画（用于取消自动播放到下一曲时的live2D动画）
+    const isLive2dActive = useRef(true);
+
     const $audio = useRef(null);
     const $audioProgressBar = useRef(null);
     const $volumeProgressBar = useRef(null);
@@ -50,17 +64,20 @@ function Player(props) {
         if (audioDuration === 0) {
             return 0;
         }
+        if (Math.floor(prevAudioCurrentTime.current) === Math.floor(audioCurrentTime)) {
+            return prevAudioCurrentTime.current / audioDuration;
+        } else {
+            prevAudioCurrentTime.current = audioCurrentTime;
+        }
         return audioCurrentTime / audioDuration;
     }, [audioCurrentTime, audioDuration, audioBarDragFlag, audioBarDragProgress]);
 
 
     useEffect(() => {
-        let initPlayMode = window.electronApi.getStore(storeKeys.playMode);
-        let initVolume = window.electronApi.getStore(storeKeys.volume);
-        initPlayMode = initPlayMode === undefined ? 1 : initPlayMode;
-        initVolume = initVolume === undefined ? 0.2 : initVolume;
-        setPlayMode(initPlayMode);
-        setAudioVolume(initVolume);
+        let storePlayMode = window.electronApi.getStore(storeKeys.playMode);
+        let storeVolume = window.electronApi.getStore(storeKeys.volume);
+        setPlayMode(storePlayMode);
+        setAudioVolume(storeVolume);
     }, []);
 
     useEffect(() => {
@@ -73,6 +90,14 @@ function Player(props) {
         randomPlayIndexs.current.indexs = shuffleArray(indexs);
         randomPlayIndexs.current.currentIndex = randomPlayIndexs.current.indexs.indexOf(playIndex);
     }, [playList]);
+
+    useEffect(() => {
+        if (playStatus) {
+            $audio.current.play();            
+        } else {
+            $audio.current.pause();
+        }        
+    }, [playStatus]);
 
 
     // 播放歌曲ID变化时，更换audio路径等相关逻辑
@@ -107,7 +132,7 @@ function Player(props) {
     }, [playId]);
 
     // 播放模式切换到随机播放时，重新打乱索引数组
-    useEffect(() => {        
+    useEffect(() => {
         if (playList.length === 0) return;
         window.electronApi.setStore(storeKeys.playMode, playMode);
         if (playMode === 1) {
@@ -129,8 +154,12 @@ function Player(props) {
 
     useEffect(() => {
         if (audioVolume === null) return;
-        $audio.current.volume = audioVolume;
-        window.electronApi.setStore(storeKeys.volume ,audioVolume);
+        if (audioVolume < 0) {
+            $audio.current.volume = 0;
+        } else {
+            $audio.current.volume = audioVolume;
+        }
+        window.electronApi.setStore(storeKeys.volume, audioVolume);
     }, [audioVolume]);
 
     // 音频加载时
@@ -157,6 +186,7 @@ function Player(props) {
             $audio.current.currentTime = 0;
             $audio.current.play();
         } else {
+            isLive2dActive.current = false;
             nextSong();
         }
     }
@@ -166,11 +196,9 @@ function Player(props) {
         if (audioSrc === '') return;
         if (playStatus) {
             setPlayStatus(false);
-            $audio.current.pause();
-        } else {
+        } else {            
             activeLive2d();
             setPlayStatus(true);
-            $audio.current.play();
         }
     }
 
@@ -202,6 +230,7 @@ function Player(props) {
 
     // 点击【音频】进度条
     function clickAudioProgress(e) {
+        if (playList.length === 0) return;
         const progress = calculateAudioProgress(e);
         const currentTime = progress * audioDuration;
         setAudioCurrentTime(currentTime);
@@ -232,6 +261,7 @@ function Player(props) {
 
     // 拖动（音频、音量）进度条时（按压且移动鼠标）
     function dragProgress(e) {
+        if (playList.length === 0) return;
         if (audioBarDragFlag) {
             const progress = calculateAudioProgress(e);
             const currentTime = progress * audioDuration;
@@ -246,6 +276,7 @@ function Player(props) {
 
     // 拖动后松开（音频、音量）进度条时（松开鼠标）
     function dropProgress(e) {
+        if (playList.length === 0) return;
         if (audioBarDragFlag) {
             const progress = calculateAudioProgress(e);
             const currentTime = progress * audioDuration;
@@ -269,9 +300,13 @@ function Player(props) {
         setPlayMode(mode);
     }
 
+    function toggleVolume() {
+        setAudioVolume(-audioVolume);
+    }
 
     // 切换播放列表显示
     function toggleShowPlaySongList() {
+        if (playList.length === 0) return;
         setPlaySongListShowFlag(!playSongListShowFlag);
     }
 
@@ -303,7 +338,13 @@ function Player(props) {
         setCurrentSong(playList[index], index);
         if (playStatus === false) {
             toggleSong();
-        }
+        } else {
+            if (isLive2dActive.current === true) {
+                activeLive2d();
+            } else {
+                isLive2dActive.current = true;
+            }              
+        }      
     }
 
     return (
@@ -318,12 +359,12 @@ function Player(props) {
                 >
                 </audio>
 
-                <div className='player_operator'>
+                <div className={classNames({
+                    player_operator: true,
+                    disable: playList.length === 0
+                })}>
 
-                    <div className={classNames({
-                        operator_left: true,
-                        hide: audioSrc === ''
-                    })}>
+                    <div className='operator_left'>
                         <div className='song_cover'>
                             <img src={songCover} alt='' />
                         </div>
@@ -372,10 +413,7 @@ function Player(props) {
                         </div>
                     </div>
 
-                    <div className={classNames({
-                        operator_right: true,
-                        hide: audioSrc === ''
-                    })}>
+                    <div className='operator_right'>
                         <i
                             className={`icon-playMode icon-playMode${playMode}`}
                             onClick={togglePlayMode}
@@ -389,7 +427,10 @@ function Player(props) {
                                 setVolumeBarShowFlag(false);
                             }}
                         >
-                            <i className='icon-volume' />
+                            <i
+                                className={audioVolume > 0 ? 'icon-volume' : 'icon-volumeMute'}
+                                onClick={toggleVolume}
+                            />
                             <div
                                 className='volume_bar_container'
                                 style={volumeBarShowFlag || volumeBarDragFlag ? null : { display: 'none' }}
@@ -402,11 +443,11 @@ function Player(props) {
                                     >
                                         <div
                                             className='progress_bar'
-                                            style={{ height: audioVolume * 100 + "%" }}
+                                            style={{ height: Math.abs(audioVolume) * 100 + "%" }}
                                         ></div>
                                         <span
                                             className='dot'
-                                            style={{ bottom: audioVolume * 100 + "%" }}
+                                            style={{ bottom: Math.abs(audioVolume) * 100 + "%" }}
                                         ></span>
                                     </div>
                                 </div>
@@ -422,6 +463,7 @@ function Player(props) {
 
             <PlaySongList
                 showFlag={playSongListShowFlag}
+                setShowFlag={setPlaySongListShowFlag}
                 playList={playList}
                 playIndex={playIndex}
                 jumpToSong={jumpToSong}

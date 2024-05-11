@@ -11,20 +11,29 @@
     .file_operator{
         display: flex;
         justify-content: space-between;
-        .play_all_button{
+        .operator_left{
             display: flex;
             align-items: center;
-            padding: 0 1.2rem;
-            height: 2.2rem;
-            border-radius: 0.2rem;
-            background-color: var(--global-active-color);
-            color: var(--global-bg-color2);
-            font-size: 0.9rem;
-            cursor: pointer;
-            .icon-play2{
-                margin-right: 0.3rem;
-                margin-bottom: -0.15rem;
+            .play_all_button{
+                display: flex;
+                align-items: center;
+                padding: 0 1.2rem;
+                height: 2.2rem;
+                border-radius: 0.2rem;
+                background-color: var(--global-active-color);
+                color: var(--global-bg-color2);
+                font-size: 0.9rem;
+                cursor: pointer;
+                .icon-play2{
+                    margin-right: 0.3rem;
+                    margin-bottom: -0.15rem;
+                    font-size: 1.2rem;
+                }
+            }
+            .icon-add{
                 font-size: 1.2rem;
+                margin-left: 0.5rem;
+                cursor: pointer;
             }
         }
         .search_input{
@@ -87,12 +96,17 @@
                 }
             }
             &.active{
-                .mark{
-                    display: block;
-                    position: absolute;
-                    left: 0.7rem;
-                    color: var(--global-active-color);
-                    font-size: 0.85rem;
+                .index{
+                    .mark{
+                        display: block;
+                        color: var(--global-active-color);
+                        font-size: 0.95rem;
+                        margin-right: 0.1rem;
+                        position: absolute;
+                    }
+                    .number{
+                        display: none;
+                    }
                 }
             }
             >div{
@@ -102,14 +116,16 @@
                 margin-right: 1rem;
             }
             .index{
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
                 width: 2.5rem;
                 flex-shrink: 0;
-                text-align: right;
                 color: var(--global-ft-color3);
-                font-size: 0.9rem;
-            }
-            .mark{
-                display: none;
+                font-size: 0.9rem;                
+                .mark{
+                    display: none;
+                }
             }
             .name{
                 width: 40%;
@@ -133,7 +149,7 @@
                 font-size: 0.9rem;
             }
             .high-light{
-                color: red;
+                color: var(--global-active-color2);
             }
         }
     }

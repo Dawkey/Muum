@@ -1,0 +1,112 @@
+.setting {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.025);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+
+    .setting-container {
+        width: 35rem;
+        height: 30rem;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--global-bg-color1);
+        border: 1px solid var(--border-color);
+        border-radius: 0.25rem;
+        margin-top: -1.25rem;
+
+        .setting-top {
+            text-align: right;
+
+            .icon-close {
+                font-size: 0.9rem;
+                cursor: pointer;
+            }
+        }
+
+        .setting-body {
+            padding: 0.5rem 1rem;
+
+            >div {
+                margin-bottom: 1.5rem;
+            }
+
+            .label {
+                font-size: 1rem;
+                font-weight: bold;
+                margin-bottom: 0.5rem;
+                color: var(--global-ft-color1);
+            }
+
+            .path-input {
+                position: relative;                
+                width: 24rem;
+                border-radius: 0.2rem;
+                background-color: var(--global-bg-color2);
+                color: var(--global-ft-color1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+                padding: 0.5rem 0.5rem;
+
+                .path {
+                    width: 100%;
+                    margin-right: 0.5rem;
+                    color: var(--global-ft-color2);
+                    font-size: 0.85rem;
+                    line-height: 1.2rem;
+                }
+
+                .icon-path {
+                    font-size: 1rem;
+                    cursor: pointer;
+                }
+            }
+
+            .setting-close {
+                margin-bottom: 0.25rem;
+
+                input[type="radio"] {
+                    display: none;
+                }
+
+                label{
+                    position: relative;
+                    display: inline-flex;
+                    align-items: center;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                }
+
+                label::before {
+                    content: "";
+                    display: inline-block;                    
+                    width: 1rem;
+                    height: 1rem;
+                    margin-right: 0.5rem;
+                    border: 1px solid var(--global-ft-color2);
+                    border-radius: 50%;
+                    box-sizing: border-box;                    
+                }
+
+                input[type="radio"]:checked+label::after {
+                    content: "";
+                    position: absolute;
+                    left: 0.2rem;
+                    width: 0.6rem;
+                    height: 0.6rem;
+                    background-color: var(--global-active-color);
+                    border-radius: 50%;
+                }
+            }
+        }
+    }
+}

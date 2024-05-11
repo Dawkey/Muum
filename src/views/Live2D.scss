@@ -13,11 +13,23 @@
         box-sizing: border-box;
         flex-direction: column-reverse;
         align-items: center;
-        padding-bottom: 5rem;
+        // padding-bottom: 5rem;
+        padding-bottom: 10vh;
         .spine-player-canvas{
-            height: 90vh;
-            width: 90vh;
-            margin-left: -31vh;
+            // height: 90vh;
+            // margin-left: -30.5vh;
+            height: 85vh;
+            margin-left: -29vh;
         }
     }
+}
+
+.refer{
+    display: none;
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    background: #000;
+    z-index: 11;
+    opacity: 0.2;
 }

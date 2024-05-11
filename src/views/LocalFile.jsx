@@ -11,7 +11,7 @@ import useSelectList from '../hooks/useSelectList';
 
 
 function LocalFile(props) {
-    const { playId, setPlaySongs, setCurrentSong } = props;
+    const { playId, setPlaySongs, setCurrentSong, setPlayStatus, activeLive2d } = props;
     const [fileList, setFileList] = useState([]);
     const [showFileList, setShowFileList] = useState([]);
     const [searchValue, setSearchValue] = useState("");
@@ -24,15 +24,20 @@ function LocalFile(props) {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-    const [menuItemIndex, setMenuItemIndex] = useState(0);
 
-    const [confirmDlgShowFlag, setConfirmDlgShowFlag] = useState(false);
+    const [deleteConfDlgShowFlag, setDeleteConfDlgShowFlag] = useState(false);
+    const [importConfDlgShowFlag, setImportConfDlgShowFlag] = useState(false);
 
     const isInit = useRef(false);
     const fuze = useRef(null);
+    const copyFilePaths = useRef([]);
+    const menuItemIndex = useRef(0);
+
+    const $localFile = useRef(null);
 
     useEffect(() => {
-        window.electronApi.getLocalFileData().then(data => {
+        let songPath = window.electronApi.getStore(storeKeys.songPath);
+        window.electronApi.getLocalFileData(songPath).then(data => {
             isInit.current = true;
             setFileList(data);
         });
@@ -40,7 +45,6 @@ function LocalFile(props) {
         window.electronApi.onFileChange(() => {
             initFileList();
         });
-
     }, []);
 
     useEffect(() => {
@@ -55,8 +59,6 @@ function LocalFile(props) {
         searchFiles(searchValue);
 
         let playSongs = window.electronApi.getStore(storeKeys.playSongs);
-        // 初次允许时，初始化播放列表数据
-        playSongs = playSongs === undefined ? [] : playSongs;
         const playSongsMap = new Map(
             playSongs.map(value => {
                 return [value.path, value.name];
@@ -73,7 +75,8 @@ function LocalFile(props) {
     }, [fileList]);
 
     function initFileList() {
-        window.electronApi.getLocalFileData().then(data => {
+        let songPath = window.electronApi.getStore(storeKeys.songPath);
+        window.electronApi.getLocalFileData(songPath).then(data => {
             isInit.current = true;
             setFileList(data);
         });
@@ -85,7 +88,7 @@ function LocalFile(props) {
         e.preventDefault();
         setMenuPosition({ x: e.clientX, y: e.clientY });
         setIsMenuOpen(true);
-        setMenuItemIndex(index);
+        menuItemIndex.current = index;
 
         clickFile(file, index, false);
     }
@@ -115,7 +118,7 @@ function LocalFile(props) {
             setPlaySongs(playSongsData);
         }
         if (isPlay) {
-            const currentSongData = fileList[menuItemIndex];
+            const currentSongData = fileList[menuItemIndex.current];
             let currentSongIndex = 0;
             playSongsData.forEach((value, index) => {
                 if (value.id === currentSongData.id) {
@@ -123,6 +126,8 @@ function LocalFile(props) {
                 }
             });
             setCurrentSong(currentSongData, currentSongIndex);
+            setPlayStatus(true);
+            activeLive2d();
         }
     }
 
@@ -149,14 +154,22 @@ function LocalFile(props) {
                     onClick={() => {
                         clickFile(file, index);
                     }}
+                    onDoubleClick={() => {
+                        menuItemIndex.current = index;
+                        addToPlayList(true);
+                    }}
                     onContextMenu={e => {
                         contextMenuFile(e, file, index);
                     }}
                 >
-                    <div className='mark'>
-                        <i  className='icon-play2'/>
+                    <div className='index'>
+                        <div className='mark'>
+                            <i className='icon-play2' />
+                        </div>
+                        <div className='number'>
+                            {fileIndex}
+                        </div>                        
                     </div>
-                    <div className='index'>{fileIndex}</div>
                     <div className='name' title={file.name}>{file.showInfo.name}</div>
                     <div className='artists' title={fileArtists}>{file.showInfo.artists}</div>
                     <div className='album' title={file.album}>{file.showInfo.album}</div>
@@ -170,6 +183,8 @@ function LocalFile(props) {
         setPlaySongs([...fileList]);
         const currentSong = fileList.length === 0 ? null : fileList[0];
         setCurrentSong(currentSong, 0);
+        setPlayStatus(true);
+        activeLive2d();
     }
 
     function searchFiles(value) {
@@ -186,9 +201,9 @@ function LocalFile(props) {
             })
             setShowFileList(list);
             return;
-        }        
+        }
         const searchList = fuze.current.search(value);
-        console.log(searchList);
+
         const handleList = searchList.map(listItem => {
             const { item, matches } = listItem;
             item.showInfo = {
@@ -200,8 +215,8 @@ function LocalFile(props) {
             const [start, end] = indices[0];
             const highLightValue = [
                 value.slice(0, start),
-                <span className='high-light' key='high-light'>{value.slice(start, end+1)}</span>,
-                value.slice(end+1)
+                <span className='high-light' key='high-light'>{value.slice(start, end + 1)}</span>,
+                value.slice(end + 1)
             ];
             if (key === 'artists') {
                 const { refIndex } = matches[0];
@@ -212,25 +227,54 @@ function LocalFile(props) {
                     if (index === refIndex) {
                         value.push("/");
                     } else {
-                        artists[index] = value + "/";                            
+                        artists[index] = value + "/";
                     }
                 });
                 item.showInfo.artists = artists;
             } else {
-                item.showInfo[key] = highLightValue;                
-            }            
+                item.showInfo[key] = highLightValue;
+            }
             return item;
         });
         setShowFileList(handleList);
     }
 
+    function importSongs() {
+        window.electronApi.importSongs().then(data => {
+            const { canceled, filePaths } = data;
+            if (canceled === true) {
+                return;
+            }            
+            const storeSongPath = window.electronApi.getStore(storeKeys.songPath);
+            copyFilePaths.current = filePaths;
+            window.electronApi.isFileExistInPath(filePaths, storeSongPath).then(isExist => {
+                if (isExist) {
+                    setImportConfDlgShowFlag(true);
+                } else {
+                    copySongs();
+                }
+            });
+        });
+    }
+
+    function copySongs(type="cover") {
+        const storeSongPath = window.electronApi.getStore(storeKeys.songPath);
+        window.electronApi.copyFiles(copyFilePaths.current, storeSongPath, type);
+    }
+
     return (
         <>
-            <div className='local_file'>
+            <div className='local_file' ref={$localFile}>
                 <div className='file_operator'>
-                    <div className='play_all_button' onClick={playAllSongs}>
-                        <i className='icon-play2' />
-                        播放全部
+                    <div className='operator_left'>
+                        <div className='play_all_button' onClick={playAllSongs}>
+                            <i className='icon-play2' />
+                            播放全部
+                        </div>
+                        <i
+                            className='icon-add'
+                            onClick={importSongs}
+                        />
                     </div>
                     <div className='search_input'>
                         <input
@@ -260,17 +304,27 @@ function LocalFile(props) {
                     </div>
                 </div>
             </div>
-            
+
             <ConfirmDialog
-                showFlag={confirmDlgShowFlag}
+                showFlag={deleteConfDlgShowFlag}
                 message="确认要删除选中的歌曲？"
-                onClose={() => { setConfirmDlgShowFlag(false) }}
+                onClose={() => { setDeleteConfDlgShowFlag(false) }}
                 onConfirm={deleteFiles}
             />
 
+            <ConfirmDialog
+                showFlag={importConfDlgShowFlag}
+                message="歌曲目录下已存在与导入歌曲相同文件名的歌曲，是否要覆盖？"
+                confirmText="是"
+                cancelText="否"
+                onClose={() => { setImportConfDlgShowFlag(false) }}
+                onConfirm={() => { copySongs("cover") }}
+                onCancel={() => { copySongs("uncover") }}
+            />
+
             <ControlledMenu
-                anchorPoint={menuPosition}
-                direction='right'
+                boundingBoxRef={$localFile}                
+                anchorPoint={menuPosition}                
                 state={isMenuOpen ? 'open' : 'closed'}
                 onClose={() => { setIsMenuOpen(false) }}
             >
@@ -290,7 +344,7 @@ function LocalFile(props) {
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        const filePath = fileList[menuItemIndex].path;
+                        const filePath = fileList[menuItemIndex.current].path;
                         window.electronApi.showFileInExplorer(filePath);
                     }}
                 >
@@ -298,7 +352,7 @@ function LocalFile(props) {
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        setConfirmDlgShowFlag(true);
+                        setDeleteConfDlgShowFlag(true);
                     }}
                 >
                     删除本地文件

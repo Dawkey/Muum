@@ -17,8 +17,12 @@ const electronApi = {
         return store.get(key);
     },
 
-    getLocalFileData: () => {
-        return ipcRenderer.invoke("getLocalFileData");
+    watchSongPath: songPath => {
+        ipcRenderer.send('watchSongPath', songPath);
+    },
+
+    getLocalFileData: songPath => {
+        return ipcRenderer.invoke("getLocalFileData", songPath);
     },
 
     parseSongFile: filePath => {
@@ -31,6 +35,11 @@ const electronApi = {
 
     deleteFiles: filePaths => {
         ipcRenderer.send("deleteFiles", filePaths);
+    },
+
+    // type表示复制类型："cover" - 覆盖原文件 | "uncover" - 不覆盖原文件
+    copyFiles: (filePaths, copyPath, type) => {
+        ipcRenderer.send("copyFiles", filePaths, copyPath, type);
     },
 
     onFileChange: fn => {
@@ -50,6 +59,13 @@ const electronApi = {
         });
     },
 
+    onShowSetting: fn => {
+        ipcRenderer.removeAllListeners('onShowSetting');
+        ipcRenderer.on('onShowSetting', () => {
+            fn();
+        });
+    },
+
     minWindow: () => {
         ipcRenderer.send('minWindow');
     },
@@ -60,6 +76,22 @@ const electronApi = {
 
     closeWindow: () => {
         ipcRenderer.send('closeWindow');
+    },
+
+    hideWindow: () => {
+        ipcRenderer.send('hideWindow');
+    },
+
+    importSongs: () => {
+        return ipcRenderer.invoke("importSongs");
+    },
+
+    selectDir: () => {
+        return ipcRenderer.invoke("selectDir");
+    },
+
+    isFileExistInPath: (filePaths, targetPath) => {
+        return ipcRenderer.invoke("isFileExistInPath", filePaths, targetPath);
     }
 }
 

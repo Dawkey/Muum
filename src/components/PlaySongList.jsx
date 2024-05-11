@@ -1,4 +1,4 @@
-import { React, useEffect, useState, } from 'react';
+import { React, useEffect, useRef, useState, } from 'react';
 import PropTypes from 'prop-types';
 import './PlaySongList.scss';
 import { numberToTime } from '../utils/tool';
@@ -9,6 +9,7 @@ import classNames from 'classnames';
 function PlaySongList(props) {
     const {
         showFlag,
+        setShowFlag,
         playList,
         playIndex,
         jumpToSong,
@@ -25,7 +26,12 @@ function PlaySongList(props) {
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     const [menuItemIndex, setMenuItemIndex] = useState(0);
 
+    const $playSongList = useRef(null);
+
     useEffect(() => {
+        if (playList.length === 0) {
+            setShowFlag(false);
+        }
         initSelect();
      }, [playList]);
 
@@ -70,12 +76,13 @@ function PlaySongList(props) {
         <div
             className='playSongList'
             style={showFlag ? null : { display: 'none' }}
+            ref={$playSongList}
         >
             <ControlledMenu
+                boundingBoxRef={$playSongList}
                 anchorPoint={menuPosition}
-                direction='right'
                 state={isMenuOpen ? 'open' : 'closed'}
-                onClose={() => { setIsMenuOpen(false) }}                
+                onClose={() => { setIsMenuOpen(false) }}
             >
                 <MenuItem
                     onClick={() => {

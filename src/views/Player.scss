@@ -18,13 +18,35 @@
         border-top: 1px solid var(--border-color);
         padding: 0 0.5rem;
         box-sizing: border-box;
+        &.disable{
+            .operator_left{
+                visibility: hidden;
+            }
+            .operator_middle{
+                .operator_bar{
+                    .bar{
+                        cursor: default;
+                        // background-color: #ddd;
+                        .dot{
+                            visibility: hidden;
+                        }
+                    }
+                    .time{
+                        visibility: hidden;
+                    }
+                }
+            }
+            .operator_right{
+                visibility: hidden;
+            }
+            i{
+                cursor: default;
+                color: var(--global-ft-color2-5);
+            }
+        }
         i{
             color: var(--global-ft-color1);
             cursor: pointer;
-        }
-
-        .hide{
-            visibility: hidden;
         }
         .operator_left{
             flex: 1;
@@ -65,7 +87,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 30rem;
+            width: 45%;
+            min-width: 30rem;
+            max-width: 60rem;
             .operator_play{
                 display: flex;
                 align-items: center;
@@ -92,7 +116,7 @@
                     display: flex;
                     align-items: center;
                     border-radius: 0.2rem;
-                    cursor: pointer;
+                    cursor: pointer;                    
                     .progress_bar{                    
                         position: absolute;
                         width: 0;

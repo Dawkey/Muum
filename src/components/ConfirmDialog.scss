@@ -4,24 +4,26 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0, 0.025);
+    background-color: rgba(0, 0, 0, 0.025);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    .dlg-container{
-        background-color: #f9f9f9;
+    user-select: none;
+    .dlg-container{        
         width: 22rem;
         height: 12rem;
         padding: 0.5rem;
         display: flex;
         flex-direction: column;
-        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
-        border-radius: 0.2rem;
+        background-color: var(--global-bg-color1);
+        border: 1px solid var(--border-color);
+        border-radius: 0.25rem;
+        margin-top: -1.25rem;
         .dlg-title{
             text-align: right;            
             .icon-close{
-                font-size: 1.5rem;
+                font-size: 0.9rem;
                 cursor: pointer;
             }
         }
@@ -42,14 +44,14 @@
                 margin: 0 0.5rem;
                 padding: 0.3rem 1.5rem;
                 font-size: 0.9rem;
-                border-radius: 0.1rem;
-                background-color: #666;
-                color: #f9f9f9;
-                box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+                border-radius: 0.15rem;
+                background-color: var(--global-active-color);
+                color: var(--global-bg-color1);
+                border: 1px solid var(--border-color);
                 cursor: pointer;
             }
             .cancel-button{
-                background-color: #f9f9f9;
+                background-color: var(--global-bg-color1);
                 color: #666;
             }
         }
