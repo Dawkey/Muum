@@ -13,8 +13,8 @@ function Live2D(props, ref) {
 
         let spine = spine41;
         spineCanvas.current = new spine.SpinePlayer('muum-live2d', {
-            "skelUrl": "/l2d/c810_01/c810_01_00.skel",
-            "atlasUrl": "/l2d/c810_01/c810_01_00.atlas",
+            "skelUrl": "./l2d/c810_01/c810_01_00.skel",
+            "atlasUrl": "./l2d/c810_01/c810_01_00.atlas",
             "animation": "idle",
             "skin": "acc",
             "backgroundColor": "#00000000",

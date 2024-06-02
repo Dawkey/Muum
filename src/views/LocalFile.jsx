@@ -94,6 +94,7 @@ function LocalFile(props) {
     }
 
     function addToPlayList(isPlay) {
+        console.log(selectedFiles);
         const selectedFileIds = new Set(selectedFiles.map(value => value.id));
         let isAdd = false;
 
@@ -118,7 +119,7 @@ function LocalFile(props) {
             setPlaySongs(playSongsData);
         }
         if (isPlay) {
-            const currentSongData = fileList[menuItemIndex.current];
+            const currentSongData = showFileList[menuItemIndex.current];
             let currentSongIndex = 0;
             playSongsData.forEach((value, index) => {
                 if (value.id === currentSongData.id) {
@@ -274,6 +275,7 @@ function LocalFile(props) {
                         <i
                             className='icon-add'
                             onClick={importSongs}
+                            title='导入歌曲'
                         />
                     </div>
                     <div className='search_input'>
@@ -344,7 +346,7 @@ function LocalFile(props) {
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        const filePath = fileList[menuItemIndex.current].path;
+                        const filePath = showFileList[menuItemIndex.current].path;
                         window.electronApi.showFileInExplorer(filePath);
                     }}
                 >

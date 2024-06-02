@@ -92,6 +92,7 @@ function Player(props) {
     }, [playList]);
 
     useEffect(() => {
+        if (audioSrc === '') return;
         if (playStatus) {
             $audio.current.play();            
         } else {
@@ -369,8 +370,8 @@ function Player(props) {
                             <img src={songCover} alt='' />
                         </div>
                         <div className='song_info'>
-                            <div className='song_name'>{songName}</div>
-                            <div className='song_artists'>{songArtists.join('/')}</div>
+                            <div className='song_name' title={songName}>{songName}</div>
+                            <div className='song_artists' title={songArtists}>{songArtists.join('/')}</div>
                         </div>
                     </div>
 

@@ -10,7 +10,6 @@ function useSelectList(totalList, listKey) {
     const shiftAnchorIndex = useRef(0);
 
     useEffect(() => {
-
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
         window.electronApi.onWindowBlur(listKey, () => {

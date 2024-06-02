@@ -5,8 +5,9 @@ import logo from '../assets/images/logo2.png';
 import title from '../assets/images/title.png';
 import { storeKeys } from '../utils/config.js';
 
-export default function TopMenu() {
+export default function TopMenu(props) {
 
+    const { settingSongPath, setSettingSongPath } = props;
     const [settingShowFlag, setSettingShowFlag] = useState(false);
 
     useEffect(() => {
@@ -25,13 +26,7 @@ export default function TopMenu() {
     }
 
     function closeWindow() {
-        const storeCloseMode = window.electronApi.getStore(storeKeys.closeMode);
-        if (storeCloseMode === 1) {
-            window.electronApi.hideWindow();
-        } else {
-            window.electronApi.closeWindow();
-        }
-
+        window.electronApi.closeWindow();
     }
 
     return (
@@ -65,6 +60,8 @@ export default function TopMenu() {
             <Setting
                 showFlag={settingShowFlag}
                 onClose={() => { setSettingShowFlag(false) }}
+                songPath={settingSongPath}
+                setSongPath={setSettingSongPath}
             />
         </div>
     )

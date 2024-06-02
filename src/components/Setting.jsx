@@ -3,9 +3,7 @@ import './Setting.scss';
 import { storeKeys } from '../utils/config';
 
 export default function Setting(props) {
-    const { showFlag, onClose } = props;
-    
-    const [songPath, setSongPath] = useState("");
+    const { songPath, setSongPath, showFlag, onClose } = props;    
     const [closeMode, setCloseMode] = useState(1);
 
     useEffect(() => {
@@ -35,6 +33,7 @@ export default function Setting(props) {
         const inputCloseMode = parseInt(e.target.value);
         setCloseMode(inputCloseMode);
         window.electronApi.setStore(storeKeys.closeMode, inputCloseMode);
+        window.electronApi.setCloseModeFlag(inputCloseMode);
     }
 
     return (

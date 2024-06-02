@@ -5,30 +5,41 @@ import './themes/index.scss';
 import './App.scss';
 
 import TopMenu from './views/TopMenu';
-import Setting from './components/Setting';
 import LocalFile from './views/LocalFile';
 import Player from './views/Player';
 import Live2D from './views/Live2D';
 import { storeKeys } from './utils/config';
+import MessageDialog from './components/MessageDialog';
 
 function App() {
     const [playList, setPlayList] = useState([]);
     const [playIndex, setPlayIndex] = useState(0);
     const [playStatus, setPlayStatus] = useState(false);
     const [playId, setPlayId] = useState('');
+    const [settingSongPath, setSettingSongPath] = useState('');
+
+    const [mesDlgShowFlag, setMesDlgShowFlag] = useState(false);
 
     const initFlag = useRef(false);
     const live2dRef = useRef(null);
 
     initStoreData();
 
-    useEffect(()=>{
+    useEffect(() => {
         let songPath = window.electronApi.getStore(storeKeys.songPath);
         window.electronApi.watchSongPath(songPath);
+
+        window.electronApi.onPathMiss(() => {
+            window.electronApi.creatInitDir().then(path => {
+                setMesDlgShowFlag(true);
+                setSettingSongPath(path);
+                window.electronApi.watchSongPath(songPath);
+            })            
+        });
     }, []);
 
     function initStoreData() {
-        if(initFlag.current){
+        if (initFlag.current) {
             return;
         }
         initFlag.current = true;
@@ -42,7 +53,7 @@ function App() {
 
         songPath = songPath ? songPath : "";
         currentSong = currentSong ? currentSong : null;
-        playSongs = playSongs ? playSongs: [];
+        playSongs = playSongs ? playSongs : [];
         playMode = playMode ? playMode : 1;
         volume = volume ? volume : 0.2;
         closeMode = closeMode ? closeMode : 1;
@@ -53,7 +64,16 @@ function App() {
         window.electronApi.setStore(storeKeys.playMode, playMode);
         window.electronApi.setStore(storeKeys.volume, volume);
         window.electronApi.setStore(storeKeys.closeMode, closeMode);
-    }    
+        window.electronApi.setCloseModeFlag(closeMode);
+
+        window.electronApi.isPathExist(songPath).then(flag => {
+            if (!flag) {
+                window.electronApi.creatInitDir().then(path => {
+                    setSettingSongPath(path);
+                });
+            }
+        });
+    }
 
     function setPlaySongs(data) {
         const playSongs = data.map(value => {
@@ -65,7 +85,7 @@ function App() {
         window.electronApi.setStore(storeKeys.playSongs, playSongs);
         setPlayList(data);
 
-        if(playSongs.length === 0) {
+        if (playSongs.length === 0) {
             setCurrentSong(null);
             return;
         }
@@ -81,20 +101,20 @@ function App() {
                 }
             });
         }
-        if(currentSongData === null){
-            if(data[playIndex]){
+        if (currentSongData === null) {
+            if (data[playIndex]) {
                 currentSongData = data[playIndex];
                 currentSongIndex = playIndex;
-            }else{
+            } else {
                 currentSongData = data[data.length - 1];
                 currentSongIndex = data.length - 1;
             }
-        }        
+        }
         setCurrentSong(currentSongData, currentSongIndex);
     }
 
     function setCurrentSong(data, index) {
-        if(data === null){
+        if (data === null) {
             window.electronApi.setStore(storeKeys.currentSong, null);
             setPlayIndex(-1);
             setPlayId(null);
@@ -110,15 +130,18 @@ function App() {
         setPlayId(data.id);
     }
 
-    function activeLive2d(){
+    function activeLive2d() {
         live2dRef.current.changeAnimation();
     }
 
     return (
         <div className="app white">
-            <TopMenu/>
+            <TopMenu
+                settingSongPath={settingSongPath}
+                setSettingSongPath={setSettingSongPath}        
+            />
 
-            <div className='app-body'>                
+            <div className='app-body'>
                 <LocalFile
                     playId={playId}
                     setPlaySongs={setPlaySongs}
@@ -139,7 +162,14 @@ function App() {
                 />
             </div>
 
-            <Live2D ref={live2dRef}/>
+            <Live2D ref={live2dRef} />
+
+            <MessageDialog
+                showFlag={mesDlgShowFlag}
+                message="歌曲路径发送变动，已重置为默认路径。"
+                confirmText="确认"
+                onClose={() => {setMesDlgShowFlag(false)}}
+            />
         </div>
     );
 }

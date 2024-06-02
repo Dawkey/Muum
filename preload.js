@@ -1,9 +1,18 @@
 const { contextBridge, ipcRenderer, } = require('electron');
 const Store = require('electron-store');
 
-const store = new Store({
-    name: 'muum-config'
-});
+let store;
+ipcRenderer.invoke("isDev").then(flag => {
+    if (flag) {
+        store = new Store({
+            name: 'muum-config-dev'
+        });
+    } else {
+        store = new Store({
+            name: 'muum-config'
+        });
+    }
+})
 
 const blurCallBacks = new Map();
 
@@ -15,6 +24,14 @@ const electronApi = {
 
     getStore: key => {
         return store.get(key);
+    },
+
+    isPathExist: songPath => {
+        return ipcRenderer.invoke("isPathExist", songPath);
+    },
+
+    creatInitDir: () => {
+        return ipcRenderer.invoke("creatInitDir");
     },
 
     watchSongPath: songPath => {
@@ -49,6 +66,13 @@ const electronApi = {
         });
     },
 
+    onPathMiss: fn =>{
+        ipcRenderer.removeAllListeners('onPathMiss');
+        ipcRenderer.on('onPathMiss', () => {
+            fn();
+        });
+    },
+
     onWindowBlur: (key, fn) => {
         blurCallBacks.set(key, fn);
         ipcRenderer.removeAllListeners('onWindowBlur');
@@ -78,8 +102,8 @@ const electronApi = {
         ipcRenderer.send('closeWindow');
     },
 
-    hideWindow: () => {
-        ipcRenderer.send('hideWindow');
+    setCloseModeFlag: closeMode => {
+        ipcRenderer.send('setCloseModeFlag', closeMode === 2);
     },
 
     importSongs: () => {

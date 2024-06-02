@@ -1,0 +1,55 @@
+.message-dialog{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.025);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    .dlg-container{
+        width: 22rem;
+        height: 12rem;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--global-bg-color1);
+        border: 1px solid var(--border-color);
+        border-radius: 0.25rem;
+        margin-top: -1.25rem;
+        .dlg-title{
+            text-align: right;            
+            .icon-close{
+                font-size: 0.9rem;
+                cursor: pointer;
+            }
+        }
+        .dlg-message{
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            padding: 0 1.5rem;            
+            line-height: 1.5rem;
+        }
+        .dlg-buttons{
+            display: flex;
+            justify-content: center;
+            padding-bottom: 1rem;
+            .confirm-button{
+                margin: 0 0.5rem;
+                padding: 0.3rem 1.5rem;
+                font-size: 0.9rem;
+                border-radius: 0.15rem;
+                background-color: var(--global-active-color);
+                color: var(--global-bg-color1);
+                border: 1px solid var(--border-color);
+                cursor: pointer;
+            }
+        }
+    }
+}
