@@ -1,6 +1,6 @@
 {
   "name": "muum",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "main": "main.js",
   "private": true,
   "homepage": "./",
@@ -23,7 +23,8 @@
     "dev": "concurrently \"cross-env BROWSER=none npm run start\" \"wait-on http://localhost:3000/ && npm run electron\"",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "predist": "npm run build"
   },
   "build": {
     "appId": "Muum",
@@ -40,8 +41,14 @@
     },
     "extends": null,
     "win": {
+      "target": "nsis",
       "icon": "build/icon.ico"
-    }
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }    
   },
   "eslintConfig": {
     "extends": [

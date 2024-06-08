@@ -1,17 +1,14 @@
 const { contextBridge, ipcRenderer, } = require('electron');
 const Store = require('electron-store');
+const path = require('path');
 
 let store;
 ipcRenderer.invoke("isDev").then(flag => {
-    if (flag) {
-        store = new Store({
-            name: 'muum-config-dev'
-        });
-    } else {
-        store = new Store({
-            name: 'muum-config'
-        });
-    }
+    const cwd = flag ? path.join(__dirname, './config') : path.join(__dirname, '../../config');
+    store = new Store({
+        name: 'muum-config',
+        cwd
+    });
 })
 
 const blurCallBacks = new Map();

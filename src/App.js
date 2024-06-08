@@ -33,7 +33,7 @@ function App() {
             window.electronApi.creatInitDir().then(path => {
                 setMesDlgShowFlag(true);
                 setSettingSongPath(path);
-                window.electronApi.watchSongPath(songPath);
+                window.electronApi.watchSongPath(path);
             })            
         });
     }, []);

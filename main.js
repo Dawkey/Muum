@@ -34,6 +34,7 @@ app.on('ready', () => {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true,
             webSecurity: false,
+            devTools: !app.isPackaged
         },
     });
     mainWindow.menuBarVisible = false;
