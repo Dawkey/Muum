@@ -21,7 +21,7 @@
         .clear_list{
             margin-right: 1rem;
             cursor: pointer;
-            color: var(--global-active-color2);
+            color: var(--global-special-color);
         }
     }
 
@@ -60,7 +60,7 @@
                 display: none;
                 font-size: 0.8rem;
                 margin-bottom: -0.1rem;
-                color: var(--global-active-color);
+                color: var(--global-special-color);
             }
             .name{
                 width: 65%;

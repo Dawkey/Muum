@@ -1,12 +1,13 @@
-import { React, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, React, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import './Player.scss';
 import PlaySongList from '../components/PlaySongList';
 import { numberToTime, shuffleArray } from '../utils/tool';
 import { storeKeys } from '../utils/config';
+import MarqueeText from '../components/MarqueeText';
 
-function Player(props) {
+const Player = forwardRef((props, ref)=> {
     const {
         playList,
         playIndex,
@@ -50,9 +51,13 @@ function Player(props) {
     // 用于控制live2D是否动画（用于取消自动播放到下一曲时的live2D动画）
     const isLive2dActive = useRef(true);
 
+    // 判断是否为首次播放歌曲，用于首次播放时，使用记录的播放时间
+    const firstPlayFlag = useRef(true);
+
     const $audio = useRef(null);
     const $audioProgressBar = useRef(null);
     const $volumeProgressBar = useRef(null);
+    const $songInfo = useRef(null);
 
     // 界面上音乐进度条的进度（受多个state影响）
     const playProgress = useMemo(() => {
@@ -82,9 +87,6 @@ function Player(props) {
 
     useEffect(() => {
         if (playList.length === 0) return;
-
-        console.log("play list change.");
-        console.log(playList);
         const indexs = new Array(playList.length).fill(0)
             .map((value, index) => index);
         randomPlayIndexs.current.indexs = shuffleArray(indexs);
@@ -163,9 +165,27 @@ function Player(props) {
         window.electronApi.setStore(storeKeys.volume, audioVolume);
     }, [audioVolume]);
 
+    useEffect(() => {
+        if (firstPlayFlag.current) return;
+        window.electronApi.setStore(storeKeys.progressTime, audioCurrentTime);
+    }, [audioCurrentTime]);
+
+    useImperativeHandle(ref, () => {
+        return {
+            setPlaySongListShowFlag
+        }
+    }, []);    
+
     // 音频加载时
     function audioLoad() {
-        setAudioCurrentTime(0);
+        if (firstPlayFlag.current) {
+            let storeProgressTime = window.electronApi.getStore(storeKeys.progressTime);
+            $audio.current.currentTime = storeProgressTime;
+            setAudioCurrentTime(storeProgressTime);
+            firstPlayFlag.current = false;
+        } else {
+            setAudioCurrentTime(0);
+        }        
         setAudioDuration($audio.current.duration);
         if (playStatus) {
             $audio.current.play();
@@ -369,9 +389,20 @@ function Player(props) {
                         <div className='song_cover'>
                             <img src={songCover} alt='' />
                         </div>
-                        <div className='song_info'>
-                            <div className='song_name' title={songName}>{songName}</div>
-                            <div className='song_artists' title={songArtists}>{songArtists.join('/')}</div>
+                        <div className='song_info' ref={$songInfo}>
+                            <MarqueeText
+                                className='song_name'
+                                text={songName}
+                                parentDom={$songInfo}
+                                resetKey={playId}
+                            />
+
+                            <MarqueeText
+                                className='song_artists'
+                                text={songArtists.join('/')}
+                                parentDom={$songInfo}
+                                resetKey={playId}
+                            />
                         </div>
                     </div>
 
@@ -472,7 +503,7 @@ function Player(props) {
             />
         </>
     )
-}
+})
 
 Player.propTypes = {
     playList: PropTypes.array

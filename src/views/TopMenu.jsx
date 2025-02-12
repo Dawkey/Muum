@@ -3,11 +3,10 @@ import './TopMenu.scss';
 import Setting from '../components/Setting.jsx';
 import logo from '../assets/images/logo2.png';
 import title from '../assets/images/title.png';
-import { storeKeys } from '../utils/config.js';
 
 export default function TopMenu(props) {
 
-    const { settingSongPath, setSettingSongPath } = props;
+    const { settingSongPath, setSettingSongPath, settingTheme, setSettingTheme } = props;
     const [settingShowFlag, setSettingShowFlag] = useState(false);
 
     useEffect(() => {
@@ -62,6 +61,8 @@ export default function TopMenu(props) {
                 onClose={() => { setSettingShowFlag(false) }}
                 songPath={settingSongPath}
                 setSongPath={setSettingSongPath}
+                theme={settingTheme}
+                setTheme={setSettingTheme}
             />
         </div>
     )

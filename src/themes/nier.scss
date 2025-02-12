@@ -1,7 +1,10 @@
 .nier{
-    --global-bg-color1: rgb(213,207,175);
+    --global-special-color: rgb(75, 72, 64);
+
+    --global-bg-color1: #fff;
     --global-bg-color1-5: #fcfcfc;
-    --global-bg-color2: rgb(222, 217, 188);
+    --global-bg-color2: #f0f0f0;
+    --global-bg-color3: #ddd;
 
     --global-ft-color1: #333;
     --global-ft-color2: #777;
@@ -9,12 +12,13 @@
     --global-ft-color3: #bbb;
 
     --global-active-color: #555;
+    --global-active-color2: #4CB799;
 
-    --list-bg-color1: rgb(224, 219, 192);
-    --list-bg-color2: rgb(217, 212, 182);
-    --list-select-bg-color: rgb(234, 230, 202);
-    --list-hover-bg-color: rgb(230, 226, 204);
+    --list-bg-color1: #fcfcfc;
+    --list-bg-color2: #f6f6f6;
+    --list-select-bg-color: rgb(225, 225, 225);
+    --list-hover-bg-color: rgb(235, 235, 235);
 
-    --border-color: rgb(165, 165, 146);
-    --bar-bg-color: rgb(200, 193, 156);
+    --border-color: #ddd;
+    --bar-bg-color: #ccc;
 }

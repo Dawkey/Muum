@@ -11,7 +11,7 @@ import useSelectList from '../hooks/useSelectList';
 
 
 function LocalFile(props) {
-    const { playId, setPlaySongs, setCurrentSong, setPlayStatus, activeLive2d } = props;
+    const { playId, setPlaySongs, setCurrentSong, setPlayStatus, activeLive2d, hidePlaySongList } = props;
     const [fileList, setFileList] = useState([]);
     const [showFileList, setShowFileList] = useState([]);
     const [searchValue, setSearchValue] = useState("");
@@ -265,7 +265,7 @@ function LocalFile(props) {
 
     return (
         <>
-            <div className='local_file' ref={$localFile}>
+            <div className='local_file' ref={$localFile} onClick={hidePlaySongList}>
                 <div className='file_operator'>
                     <div className='operator_left'>
                         <div className='play_all_button' onClick={playAllSongs}>
@@ -282,6 +282,7 @@ function LocalFile(props) {
                         <input
                             className='input'
                             placeholder='搜索本地音乐'
+                            spellcheck="false"
                             onChange={e => {
                                 const value = e.target.value;
                                 searchFiles(value);

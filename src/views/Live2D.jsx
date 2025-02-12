@@ -2,27 +2,27 @@ import { React, forwardRef, useEffect, useImperativeHandle, useRef } from 'react
 import './Live2D.scss';
 // import spine40 from '../utils/spine/spine-player4.0';
 import spine41 from '../utils/spine/spine-player4.1';
+import classNames from 'classnames';
 
 function Live2D(props, ref) {
+    const { theme } = props;
+
     const spineCanvas = useRef(null);
 
     useEffect(() => {
         if (spineCanvas.current) {
-            return;
+            spineCanvas.current.dispose();
         }
 
         let spine = spine41;
-        spineCanvas.current = new spine.SpinePlayer('muum-live2d', {
-            "skelUrl": "./l2d/c810_01/c810_01_00.skel",
-            "atlasUrl": "./l2d/c810_01/c810_01_00.atlas",
+
+        const commonParam = {
             "animation": "idle",
-            "skin": "acc",
             "backgroundColor": "#00000000",
+            "defaultMix": 0,
             "alpha": true,
             "premultipliedAlpha": true,
             "preserveDrawingBuffer": true,
-            //对于2B的live2D很关键
-            "defaultMix": 0,
             "showControls": false,
             "showLoading": false,
             "viewport": {
@@ -33,9 +33,25 @@ function Live2D(props, ref) {
                 padTop: 0,
                 padBottom: 0,
                 transitionTime: 0,
-            }
-        });
-    }, []);
+            }            
+        }
+
+        const nierParam = {
+            "skelUrl": "./l2d/c810_01/c810_01_00.skel",
+            "atlasUrl": "./l2d/c810_01/c810_01_00.atlas",
+            "skin": "acc",
+        }
+
+        const cinderellaParam = {
+            "skelUrl": "./l2d/c511_01/c511_01_00.skel",
+            "atlasUrl": "./l2d/c511_01/c511_01_00.atlas",
+            "skin": "default",
+        }
+
+        const themeParam = theme === 1 ? nierParam : cinderellaParam;
+
+        spineCanvas.current = new spine.SpinePlayer('muum-live2d', { ...commonParam, ...themeParam });
+    }, [theme]);
 
     useImperativeHandle(ref, () => {
         return {
@@ -53,7 +69,13 @@ function Live2D(props, ref) {
 
     return (
         <>
-            <div className='live2d' id='muum-live2d'></div>
+            <div
+                className={classNames({
+                    'nier': theme === 1,
+                    'cinderella': theme === 2
+                })}
+                id='muum-live2d'>            
+            </div>
             <div className='refer'></div>
         </>
     )

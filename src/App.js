@@ -8,20 +8,25 @@ import TopMenu from './views/TopMenu';
 import LocalFile from './views/LocalFile';
 import Player from './views/Player';
 import Live2D from './views/Live2D';
+// import AudioPage from "./views/AudioPage";
 import { storeKeys } from './utils/config';
 import MessageDialog from './components/MessageDialog';
+import classNames from 'classnames';
 
 function App() {
     const [playList, setPlayList] = useState([]);
     const [playIndex, setPlayIndex] = useState(0);
     const [playStatus, setPlayStatus] = useState(false);
     const [playId, setPlayId] = useState('');
+
     const [settingSongPath, setSettingSongPath] = useState('');
+    const [settingTheme, setSettingTheme] = useState(1);
 
     const [mesDlgShowFlag, setMesDlgShowFlag] = useState(false);
 
     const initFlag = useRef(false);
     const live2dRef = useRef(null);
+    const playerRef = useRef(null);
 
     initStoreData();
 
@@ -48,23 +53,31 @@ function App() {
         let currentSong = window.electronApi.getStore(storeKeys.currentSong);
         let playSongs = window.electronApi.getStore(storeKeys.playSongs);
         let playMode = window.electronApi.getStore(storeKeys.playMode);
+        let progressTime = window.electronApi.getStore(storeKeys.progressTime);
         let volume = window.electronApi.getStore(storeKeys.volume);
         let closeMode = window.electronApi.getStore(storeKeys.closeMode);
+        let theme = window.electronApi.getStore(storeKeys.theme);
 
         songPath = songPath ? songPath : "";
         currentSong = currentSong ? currentSong : null;
         playSongs = playSongs ? playSongs : [];
         playMode = playMode ? playMode : 1;
+        progressTime = progressTime ? progressTime : 0;
         volume = volume ? volume : 0.2;
         closeMode = closeMode ? closeMode : 1;
+        theme = theme ? theme : 1;
 
         window.electronApi.setStore(storeKeys.songPath, songPath);
         window.electronApi.setStore(storeKeys.currentSong, currentSong);
         window.electronApi.setStore(storeKeys.playSongs, playSongs);
         window.electronApi.setStore(storeKeys.playMode, playMode);
+        window.electronApi.setStore(storeKeys.progressTime, progressTime);
         window.electronApi.setStore(storeKeys.volume, volume);
         window.electronApi.setStore(storeKeys.closeMode, closeMode);
-        window.electronApi.setCloseModeFlag(closeMode);
+        window.electronApi.setStore(storeKeys.theme, theme);
+
+        window.electronApi.setCloseModeFlag(closeMode);        
+
 
         window.electronApi.isPathExist(songPath).then(flag => {
             if (!flag) {
@@ -134,11 +147,21 @@ function App() {
         live2dRef.current.changeAnimation();
     }
 
+    function hidePlaySongList(){
+        playerRef.current.setPlaySongListShowFlag(false);
+    }
+
     return (
-        <div className="app white">
+        <div className={classNames({
+            'app': true,            
+            'nier': settingTheme === 1,
+            'cinderella': settingTheme === 2
+        })}>
             <TopMenu
                 settingSongPath={settingSongPath}
-                setSettingSongPath={setSettingSongPath}        
+                setSettingSongPath={setSettingSongPath}
+                settingTheme={settingTheme}
+                setSettingTheme={setSettingTheme}
             />
 
             <div className='app-body'>
@@ -148,9 +171,11 @@ function App() {
                     setCurrentSong={setCurrentSong}
                     setPlayStatus={setPlayStatus}
                     activeLive2d={activeLive2d}
+                    hidePlaySongList={hidePlaySongList}
                 />
 
                 <Player
+                    ref={playerRef}
                     playList={playList}
                     playIndex={playIndex}
                     playStatus={playStatus}
@@ -162,7 +187,10 @@ function App() {
                 />
             </div>
 
-            <Live2D ref={live2dRef} />
+            <Live2D 
+                ref={live2dRef} 
+                theme={settingTheme}
+            />
 
             <MessageDialog
                 showFlag={mesDlgShowFlag}
@@ -170,6 +198,8 @@ function App() {
                 confirmText="确认"
                 onClose={() => {setMesDlgShowFlag(false)}}
             />
+
+            {/* <AudioPage/> */}
         </div>
     );
 }

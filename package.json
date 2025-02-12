@@ -1,17 +1,20 @@
 {
   "name": "muum",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "main.js",
   "private": true,
   "homepage": "./",
   "dependencies": {
     "chokidar": "^3.6.0",
     "electron-store": "^8.1.0",
+    "gsap": "^3.12.5",
     "hidefile": "^3.0.0",
     "lockfile": "^1.0.4",
     "music-metadata": "^7.14.0",
     "p-limit": "^3.1.0",
     "proper-lockfile": "^4.1.2",
+    "react-fast-marquee": "^1.6.5",
+    "three": "^0.108.0",
     "uuid": "^9.0.1"
   },
   "scripts": {
@@ -23,8 +26,7 @@
     "dev": "concurrently \"cross-env BROWSER=none npm run start\" \"wait-on http://localhost:3000/ && npm run electron\"",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "prepack": "npm run build",
-    "predist": "npm run build"
+    "prepack": "npm run build"
   },
   "build": {
     "appId": "Muum",
@@ -48,7 +50,7 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true
-    }    
+    }
   },
   "eslintConfig": {
     "extends": [

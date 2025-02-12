@@ -20,7 +20,7 @@
                 padding: 0 1.2rem;
                 height: 2.2rem;
                 border-radius: 0.2rem;
-                background-color: var(--global-active-color);
+                background-color: var(--global-special-color);
                 color: var(--global-bg-color2);
                 font-size: 0.9rem;
                 cursor: pointer;
@@ -68,6 +68,7 @@
                 font-size: 1.1rem;
                 flex-shrink: 0;
                 margin-left: 0.3rem;
+                color: var(--global-special-color);
             }
         }
     }
@@ -99,7 +100,7 @@
                 .index{
                     .mark{
                         display: block;
-                        color: var(--global-active-color);
+                        color: var(--global-special-color);
                         font-size: 0.95rem;
                         margin-right: 0.1rem;
                         position: absolute;
@@ -149,7 +150,7 @@
                 font-size: 0.9rem;
             }
             .high-light{
-                color: var(--global-active-color2);
+                color: var(--global-special-color);
             }
         }
     }
