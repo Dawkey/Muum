@@ -7,7 +7,6 @@ const { v4: uuidv4 } = require('uuid');
 const pLimit = require('p-limit');
 const Store = require('electron-store');
 const chokidar = require('chokidar');
-const hidefile = require('hidefile');
 
 
 Store.initRenderer();
